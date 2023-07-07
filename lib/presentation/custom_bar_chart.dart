@@ -19,11 +19,11 @@ class CustomBarChart extends StatelessWidget {
               ),
               "value": Variable(accessor: (Map map) => map["value"] as num)
             },
-            elements: [
-              IntervalElement(
+            marks: [
+              IntervalMark(
                 color: (chartData.length > 10)
-                    ? ColorAttr(variable: "label", values: Defaults.colors20)
-                    : ColorAttr(variable: "label", values: Defaults.colors10),
+                    ? ColorEncode(variable: "label", values: Defaults.colors20)
+                    : ColorEncode(variable: "label", values: Defaults.colors10),
               )
             ],
             axes: [Defaults.horizontalAxis, Defaults.verticalAxis],

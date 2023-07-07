@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:media_logging/domain/repositories/database_repository.dart';
 import 'package:path/path.dart';

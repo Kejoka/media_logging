@@ -50,9 +50,9 @@ class StatsContentBuilder extends StatelessWidget {
           if (snapshot.hasData && media.isNotEmpty) {
             return builder(snapshot.data);
           } else {
-            return Column(
+            return const Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [Text("Keine Daten gefunden")],
+              children: [Text("Keine Daten gefunden")],
             );
           }
         }));

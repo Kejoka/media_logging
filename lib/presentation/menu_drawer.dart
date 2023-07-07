@@ -4,14 +4,36 @@ import 'package:get_it/get_it.dart';
 import 'package:media_logging/domain/use_cases/empty_databse.dart';
 import 'package:media_logging/domain/use_cases/export_database.dart';
 import 'package:media_logging/domain/use_cases/import_database.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// MenuDrawer Widget which contains the options to export, import and reset
 /// the database. Wanting to reset the database has to be confirmed to prevent
 /// unwanted removal of all data
 
-class MenuDrawer extends StatelessWidget {
+class MenuDrawer extends StatefulWidget {
   const MenuDrawer({required this.refreshView, super.key});
   final Function refreshView;
+
+  @override
+  State<MenuDrawer> createState() => _MenuDrawerState();
+}
+
+class _MenuDrawerState extends State<MenuDrawer> {
+  bool releaseLock = true;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) { 
+      _fetchBool();
+    });
+  }
+
+  void _fetchBool() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      releaseLock = prefs.getBool('release_lock') ?? true;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +69,7 @@ class MenuDrawer extends StatelessWidget {
                               Navigator.of(context).pop();
                               Navigator.of(context).pop();
                               await GetIt.instance.get<EmptyDatabase>().call();
-                              refreshView();
+                              widget.refreshView();
                             },
                           )
                         ],
@@ -72,16 +94,32 @@ class MenuDrawer extends StatelessWidget {
               onTap: () async {
                 Navigator.pop(context);
                 await GetIt.instance.get<ImportDatabase>().call();
-                refreshView();
+                widget.refreshView();
               },
               child: const Text(
                 "Datenbank importieren",
                 style: TextStyle(fontSize: 18, fontFamily: "verdana"),
               ),
             ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                const Text("Releasefilter", style: TextStyle(fontSize: 18, fontFamily: "verdana"),),
+                Checkbox(value: releaseLock, onChanged: (currentVal) async {
+                    SharedPreferences prefs = await SharedPreferences.getInstance();
+                    prefs.setBool('release_lock', currentVal ?? true);
+                    setState(() {
+                      releaseLock = currentVal ?? true;
+                    });
+                }, 
+                fillColor: MaterialStateProperty.resolveWith((states) {
+                  return Theme.of(context).secondaryHeaderColor;
+                }),)
+              ],
+            ),
             const SizedBox(height: 500),
-            Column(
-              children: const [
+            const Column(
+              children: [
                 Text("Game-Daten von: IDGB"),
                 Text("Film- und Serien-Daten von: TMDB"),
                 Text("Buch-Daten von: Google Books"),

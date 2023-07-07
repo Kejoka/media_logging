@@ -192,8 +192,15 @@ class MediaRepositoryImpl implements MediaRepository {
         // log(results.toString());
         for (var result in results["results"]) {
           try {
-            if (!DateTime.parse(result["release_date"])
-                .isAfter(DateTime.now())) {
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            bool releaseLock = prefs.getBool('release_lock') ?? true;
+            if (releaseLock) {
+              if (!DateTime.parse(result["release_date"])
+                  .isAfter(DateTime.now())) {
+                suggestions.add(result);
+              }
+            }
+            else {
               suggestions.add(result);
             }
           } catch (error) {
@@ -214,8 +221,15 @@ class MediaRepositoryImpl implements MediaRepository {
         List<dynamic> suggestions = [];
         for (var result in results["results"]) {
           try {
-            if (!DateTime.parse(result["first_air_date"])
-                .isAfter(DateTime.now())) {
+            SharedPreferences prefs = await SharedPreferences.getInstance();
+            bool releaseLock = prefs.getBool('release_lock') ?? true;
+            if (releaseLock) {
+              if (!DateTime.parse(result["first_air_date"])
+                  .isAfter(DateTime.now())) {
+                suggestions.add(result);
+              }
+            }
+            else {
               suggestions.add(result);
             }
           } catch (error) {

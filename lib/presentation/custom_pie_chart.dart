@@ -23,20 +23,20 @@ class CustomPieChart extends StatelessWidget {
                   scale: LinearScale(min: 0)),
             },
             transforms: [Proportion(variable: "value", as: "percent")],
-            elements: [
-              IntervalElement(
+            marks: [
+              IntervalMark(
                 position: Varset("percent") / Varset("label"),
                 modifiers: [StackModifier()],
-                color: ColorAttr(variable: "label", values: Defaults.colors20),
-                label: LabelAttr(
+                color: ColorEncode(variable: "label", values: Defaults.colors20),
+                label: LabelEncode(
                     encoder: (tuple) => (Label(
                         "${tuple["label"].toString()}\n${tuple["value"].toStringAsFixed(2)}%",
                         LabelStyle(
-                            style: TextStyle(
+                            textStyle: TextStyle(
                                 fontSize: 10,
                                 color: Colors.white,
                                 backgroundColor:
-                                    ThemeData.dark().backgroundColor))))),
+                                    ThemeData.dark().colorScheme.background))))),
               )
             ],
             coord: PolarCoord(transposed: true, dimCount: 1),
