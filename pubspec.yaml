@@ -38,16 +38,16 @@ dependencies:
   cupertino_icons: ^1.0.2
   sqflite: ^2.2.2
   path: ^1.8.2
-  http: ^0.13.5
+  http: ^1.1.0
   tmdb_api: ^2.1.4
   flutter_typeahead: ^4.1.1
   file_picker: ^5.2.4
   books_finder: ^4.3.0
-  flutter_launcher_icons: ^0.11.0
+  flutter_launcher_icons: ^0.13.1
   graphic: ^2.2.0
   cached_network_image: ^3.2.3
   get_it: ^7.2.0
-  connectivity_plus: ^3.0.2
+  connectivity_plus: ^5.0.0
   flutter_dotenv: ^5.1.0
   shared_preferences: ^2.1.1
 
