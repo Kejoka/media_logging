@@ -28,7 +28,7 @@ class _MediaNavigatorState extends State<MediaNavigator>
     with TickerProviderStateMixin {
   // 0 = Media List View, 1 = Statistics View
   var _appMode = 0;
-  final _appModeTexts = ["Medien-Regal", "Statistiken"];
+  final _appModeTexts = ["Medien-Regal", "Backlog", "Statistiken"];
   var _selectedYear = DateTime.now().year;
   dynamic _tabBarController;
   /// Different ListViewBuilders for each media type which are represented as their

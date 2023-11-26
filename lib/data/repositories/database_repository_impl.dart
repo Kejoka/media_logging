@@ -10,19 +10,19 @@ import 'dart:io';
 class DatabaseRepositoryImpl implements DatabaseRepository {
   Future<Database> initDB() async {
     String dbPath = await getDatabasesPath();
-    return openDatabase(join(dbPath, "media_database.db"), version: 2,
+    return openDatabase(join(dbPath, "media_database.db"), version: 3,
         onCreate: (database, version) async {
       await database.execute(
           "CREATE TABLE games (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, addedIn NUMBER, image TEXT, release TEXT, genres TEXT, platforms TEXT, averageRating REAL, medal NUMBER, trophy NUMBER)");
       await database.execute(
           "CREATE TABLE movies (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, image TEXT, genres TEXT, addedIn NUMBER, release TEXT, medal NUMBER, averageRating REAL)");
       await database.execute(
-          "CREATE TABLE shows (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, image TEXT, genres TEXT, addedIn NUMBER, release TEXT, medal NUMBER, seasons TEXT, averageRating REAL)");
+          "CREATE TABLE shows (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, image TEXT, genres TEXT, addedIn NUMBER, release TEXT, medal NUMBER, seasons TEXT, averageRating REAL, episode INT DEFAULT 0)");
       await database.execute(
           "CREATE TABLE books (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, subtitle TEXT, image TEXT, author TEXT, medal NUMBER, averageRating REAL, pageCount NUMBER, release TEXT, addedIn NUMBER)");
     },
     onUpgrade: (database, oldVersion, newVersion) async {
-      if (newVersion == 2) {
+      if (newVersion == 3) {
         await database.execute("ALTER TABLE shows ADD COLUMN episode INT DEFAULT 0");
       }
     });

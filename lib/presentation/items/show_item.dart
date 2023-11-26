@@ -69,10 +69,14 @@ class _ShowItemState extends State<ShowItem> {
           margin: EdgeInsets.zero,
           icon: Padding(
             padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
-            child: IconButton(
-              onPressed: _toggleRankImage,
-              icon: Image.asset(rankImageSelection[currentRank]),
-              iconSize: 30,
+            child: SizedBox(
+              width: 60,
+              height: 60,
+              child: IconButton(
+                onPressed: _toggleRankImage,
+                icon: Image.asset(rankImageSelection[currentRank]),
+                iconSize: 30,
+              ),
             ),
           ),
         ),
