@@ -176,7 +176,7 @@ class _BookManualFormState extends State<BookManualForm> {
                         subtitle: subtitleText ?? widget.book?.subtitle ?? "",
                         image: imageLink ?? widget.book?.image ?? "",
                         author: authorText ?? widget.book?.author ?? "",
-                        medal: widget.book?.medal ?? 0,
+                        rating: widget.book?.rating ?? 2.5,
                         averageRating:
                             ratingVal ?? widget.book?.averageRating ?? 0.0,
                         pageCount: pageCount ?? widget.book?.pageCount ?? 0,
@@ -188,7 +188,7 @@ class _BookManualFormState extends State<BookManualForm> {
                         subtitle: subtitleText ?? "",
                         image: imageLink ?? "",
                         author: authorText ?? "Unbekannter Autor",
-                        medal: 0,
+                        rating: 2.5,
                         averageRating: ratingVal ?? 0.0,
                         pageCount: pageCount ?? 0,
                         release: newDate ?? DateTime.now(),

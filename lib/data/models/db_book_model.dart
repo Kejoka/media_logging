@@ -3,7 +3,7 @@ class DBBookModel {
   final String subtitle;
   final String image;
   final String author;
-  int medal;
+  double rating;
   final double averageRating;
   final int pageCount;
   final DateTime? release;
@@ -15,7 +15,7 @@ class DBBookModel {
     required this.subtitle,
     required this.image,
     required this.author,
-    required this.medal,
+    required this.rating,
     required this.averageRating,
     required this.pageCount,
     required this.release,
@@ -29,7 +29,7 @@ class DBBookModel {
       "subtitle": subtitle,
       "image": image,
       "author": author,
-      "medal": medal,
+      "rating": rating,
       "averageRating": averageRating,
       "pageCount": pageCount,
       "release": release.toString(),
@@ -42,7 +42,7 @@ class DBBookModel {
         subtitle = item["subtitle"],
         image = item["image"],
         author = item["author"],
-        medal = item["medal"],
+        rating = item["rating"],
         averageRating = item["averageRating"],
         pageCount = item["pageCount"],
         release = DateTime.tryParse(item["release"]),

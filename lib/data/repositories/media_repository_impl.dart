@@ -23,20 +23,25 @@ import 'package:tmdb_api/tmdb_api.dart';
 class MediaRepositoryImpl implements MediaRepository {
   Future<Database> initDB() async {
     String dbPath = await getDatabasesPath();
-    return openDatabase(join(dbPath, "media_database.db"), version: 2,
+    return openDatabase(join(dbPath, "media_database.db"), version: 3,
         onCreate: (database, version) async {
       await database.execute(
-          "CREATE TABLE games (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, addedIn NUMBER, image TEXT, release TEXT, genres TEXT, platforms TEXT, averageRating REAL, medal NUMBER, trophy NUMBER)");
+          "CREATE TABLE games (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, addedIn NUMBER, image TEXT, release TEXT, genres TEXT, platforms TEXT, averageRating REAL, rating REAL DEFAULT 2.5, trophy NUMBER)");
       await database.execute(
-          "CREATE TABLE movies (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, image TEXT, genres TEXT, addedIn NUMBER, release TEXT, medal NUMBER, averageRating REAL)");
+          "CREATE TABLE movies (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, image TEXT, genres TEXT, addedIn NUMBER, release TEXT, rating REAL DEFAULT 2.5, averageRating REAL)");
       await database.execute(
-          "CREATE TABLE shows (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, image TEXT, genres TEXT, addedIn NUMBER, release TEXT, medal NUMBER, seasons TEXT, averageRating REAL)");
+          "CREATE TABLE shows (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, image TEXT, genres TEXT, addedIn NUMBER, release TEXT, rating REAL DEFAULT 2.5, seasons TEXT, averageRating REAL, episode INT DEFAULT 0)");
       await database.execute(
-          "CREATE TABLE books (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, subtitle TEXT, image TEXT, author TEXT, medal NUMBER, averageRating REAL, pageCount NUMBER, release TEXT, addedIn NUMBER)");
+          "CREATE TABLE books (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, subtitle TEXT, image TEXT, author TEXT, rating REAL DEFAULT 2.5, averageRating REAL, pageCount NUMBER, release TEXT, addedIn NUMBER)");
     },
     onUpgrade: (database, oldVersion, newVersion) async {
-      if (newVersion == 2) {
-        await database.execute("ALTER TABLE shows ADD COLUMN episode INT DEFAULT 0");
+      log("Old Version: ${oldVersion.toString()}, New Version: ${newVersion.toString()}");
+      if (oldVersion < newVersion) {
+        oldVersion++;
+      }
+      for (oldVersion; oldVersion <= newVersion; oldVersion++) {
+        log("Performing Update Version ${oldVersion.toString()}");
+        await _performDBUpgrade(database, oldVersion);
       }
     });
   }
@@ -52,24 +57,24 @@ class MediaRepositoryImpl implements MediaRepository {
         final dbGames = result.map((e) => GameModel.fromMap(e));
         return dbGames
             .map((e) => Game(e.id, e.title, e.image, e.release, e.genres,
-                e.platforms, e.averageRating, e.medal, e.addedIn, e.trophy))
+                e.platforms, e.averageRating, e.rating, e.addedIn, e.trophy))
             .toList();
       case "movies":
         final dbMovies = result.map((e) => MovieModel.fromMap(e));
         return dbMovies
             .map((e) => Movie(e.title, e.image, e.genres, e.addedIn, e.release,
-                e.medal, e.averageRating, e.id))
+                e.rating, e.averageRating, e.id))
             .toList();
       case "shows":
         final dbShows = result.map((e) => ShowModel.fromMap(e));
         return dbShows
             .map((e) => Show(e.title, e.image, e.genres, e.addedIn, e.release,
-                e.medal, e.seasonsA, e.seasonsB, e.averageRating, e.episode, e.id))
+                e.rating, e.seasonsA, e.seasonsB, e.averageRating, e.episode, e.id))
             .toList();
       case "books":
         final dbBooks = result.map((e) => DBBookModel.fromMap(e));
         return dbBooks
-            .map((e) => DbBook(e.title, e.subtitle, e.image, e.author, e.medal,
+            .map((e) => DbBook(e.title, e.subtitle, e.image, e.author, e.rating,
                 e.averageRating, e.pageCount, e.release, e.addedIn, e.id))
             .toList();
       default:
@@ -169,7 +174,7 @@ class MediaRepositoryImpl implements MediaRepository {
             .map((element) =>
                 gameModelFromJson(element, addedIn ?? DateTime.now().year))
             .map((e) => Game(e.id, e.title, e.image, e.release, e.genres,
-                e.platforms, e.averageRating, e.medal, e.addedIn, e.trophy))
+                e.platforms, e.averageRating, e.rating, e.addedIn, e.trophy))
             .toList();
         return games;
       case "movies":
@@ -305,7 +310,7 @@ class MediaRepositoryImpl implements MediaRepository {
         genres: json["genres"],
         platforms: json["platforms"],
         averageRating: json["total_rating"],
-        medal: 0,
+        rating: 2.5,
         trophy: 0,
         addedIn: addedIn);
     return game;
@@ -344,5 +349,23 @@ class MediaRepositoryImpl implements MediaRepository {
             'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYWI2NmRlZjg4MDFlZGJlM2NkYThiZDBkOTAyNjcxMiIsInN1YiI6IjYzOWY4ZjNlYmU2ZDg4MDA3ZjE3ZWI3NiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.TDGISFMYUf5XzmB2xhIsrcgNhhjmC229jHFo828odD0'),
         defaultLanguage: 'de-DE');
     return tmdb.images.getUrl(posterPath) ?? "";
+  }
+}
+
+Future<void> _performDBUpgrade(database, versionNumber) async {
+  switch(versionNumber) {
+    case 2:
+      await database.execute("ALTER TABLE shows ADD COLUMN episode INT DEFAULT 0");
+      break;
+    case 3:
+      await database.execute("ALTER TABLE games ADD COLUMN rating REAL DEFAULT 2.5");
+      await database.execute("ALTER TABLE movies ADD COLUMN rating REAL DEFAULT 2.5");
+      await database.execute("ALTER TABLE shows ADD COLUMN rating REAL DEFAULT 2.5");
+      await database.execute("ALTER TABLE books ADD COLUMN rating REAL DEFAULT 2.5");
+      await database.execute("ALTER TABLE games DROP COLUMN medal");
+      await database.execute("ALTER TABLE movies DROP COLUMN medal");
+      await database.execute("ALTER TABLE shows DROP COLUMN medal");
+      await database.execute("ALTER TABLE books DROP COLUMN medal");
+      break;
   }
 }

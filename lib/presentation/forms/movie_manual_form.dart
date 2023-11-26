@@ -143,7 +143,7 @@ class _MovieManualFormState extends State<MovieManualForm> {
                         id: widget.movie?.id ?? -1,
                         title: titleText ?? widget.movie?.title ?? "",
                         image: imageLink ?? widget.movie?.image ?? "",
-                        medal: widget.movie?.medal ?? 0,
+                        rating: widget.movie?.rating ?? 2.5,
                         averageRating:
                             ratingVal ?? widget.movie?.averageRating ?? 0.0,
                         release: newDate ?? widget.movie?.release,
@@ -153,7 +153,7 @@ class _MovieManualFormState extends State<MovieManualForm> {
                     await GetIt.instance.get<CreateMedium>().call(MovieModel(
                           title: titleText ?? "Kein Titel",
                           image: imageLink ?? "",
-                          medal: 0,
+                          rating: 2.5,
                           averageRating: ratingVal ?? 0.0,
                           release: newDate ?? DateTime.now(),
                           addedIn: addedIn.year,

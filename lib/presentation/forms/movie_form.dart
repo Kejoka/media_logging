@@ -144,7 +144,7 @@ class _MovieFormState extends State<MovieForm> {
         averageRating: double.tryParse(
                 _chosenMovie["vote_average"].toDouble().toStringAsFixed(1)) ??
             _chosenMovie["vote_average"].toDouble(),
-        medal: 0);
+        rating: 2.5);
     GetIt.instance
         .get<CreateMedium>()
         .call(movie)

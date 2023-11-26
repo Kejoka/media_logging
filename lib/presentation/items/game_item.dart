@@ -1,12 +1,13 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:get_it/get_it.dart';
 import 'package:media_logging/data/models/game_model.dart';
 import 'package:media_logging/domain/entities/game.dart';
 import 'package:media_logging/domain/use_cases/update_medium.dart';
 import 'package:media_logging/presentation/custom_gf_list_tile.dart';
 
-/// Tile that shows information about a game. Uses the modified GF List Tile
+/// Tile that games information about a game. Uses the modified GF List Tile
 
 class GameItem extends StatefulWidget {
   final Game game;
@@ -37,12 +38,12 @@ class _GameItemState extends State<GameItem> {
     'assets/images/platinum.png',
     'assets/images/100.png',
   ];
-  int currentRank = 0;
+  double currentRating = 2.5;
   int currentTrophy = 0;
 
   @override
   Widget build(BuildContext context) {
-    currentRank = widget.game.medal;
+    currentRating = widget.game.rating;
     currentTrophy = widget.game.trophy;
     return Padding(
       padding: const EdgeInsets.all(5),
@@ -68,51 +69,36 @@ class _GameItemState extends State<GameItem> {
           margin: EdgeInsets.zero,
           icon: Padding(
             padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 60,
-                  height: 60,
-                  child: IconButton(
-                    onPressed: _toggleTrophyImage,
-                    icon: Image.asset(trophyImageSelection[currentTrophy]),
-                  ),
+            child: SizedBox(
+                  height: 100,
+                  child: RatingBar(
+                    initialRating: currentRating,
+                    direction: Axis.vertical,
+                    allowHalfRating: true,
+                    itemCount: 5,
+                    itemSize: 20,
+                    ratingWidget: RatingWidget(full: const Icon(Icons.star, color: Colors.yellow), half: const Icon(Icons.star_half, color: Colors.yellow,), empty: const Icon(Icons.star_border, color: Colors.yellow,)), 
+                    onRatingUpdate: (rating) {
+                      _updateRating(rating);
+                  })
                 ),
-                SizedBox(
-                  width: 60,
-                  height: 60,
-                  child: IconButton(
-                    onPressed: _toggleRankImage,
-                    icon: Image.asset(rankImageSelection[currentRank]),
-                  ),
-                ),
-              ],
-            ),
           ),
         ),
       ),
     );
   }
-  /// Function that changes the rank/medal image and updates the changed Database entry
-  _toggleRankImage() {
-    if (currentRank == rankImageSelection.length - 1) {
-      setState(() {
-        currentRank = 0;
-      });
-    } else {
-      setState(() {
-        currentRank += 1;
-      });
-    }
+  /// Function that changes the rank/rating image and updates the changed Database entry
+  _updateRating(rating) {
     setState(() {
-      widget.game.medal = currentRank;
+      currentRating = rating;
+      widget.game.rating = currentRating;
     });
     GetIt.instance.get<UpdateMedium>().call(GameModel(
         title: widget.game.title,
         image: widget.game.image,
         addedIn: widget.game.addedIn,
         release: widget.game.release,
-        medal: currentRank,
+        rating: currentRating,
         trophy: widget.game.trophy,
         averageRating: widget.game.averageRating,
         id: widget.game.id,
@@ -138,7 +124,7 @@ class _GameItemState extends State<GameItem> {
         image: widget.game.image,
         addedIn: widget.game.addedIn,
         release: widget.game.release,
-        medal: widget.game.medal,
+        rating: widget.game.rating,
         trophy: currentTrophy,
         averageRating: widget.game.averageRating,
         id: widget.game.id,
@@ -148,21 +134,107 @@ class _GameItemState extends State<GameItem> {
   /// Function that handles image loading
   _generateImage() {
     if (widget.game.image.isNotEmpty) {
-      return CachedNetworkImage(
-        imageUrl: widget.game.image,
-        placeholder: ((context, url) =>
-            Image.asset('assets/images/game-placeholder.png')),
-        height: 110,
-        width: 75,
-        fadeInDuration: const Duration(milliseconds: 200),
-        fadeOutDuration: const Duration(milliseconds: 200),
+      return InkWell(
+        onTap: (() {
+          if (currentTrophy == trophyImageSelection.length - 1) {
+            setState(() {
+              currentTrophy = 0;
+            });
+          } else {
+            setState(() {
+              currentTrophy += 1;
+            });
+          }
+          setState(() {
+            widget.game.trophy = currentTrophy;
+          });
+          GetIt.instance.get<UpdateMedium>().call(GameModel(
+          title: widget.game.title,
+          image: widget.game.image,
+          addedIn: widget.game.addedIn,
+          release: widget.game.release,
+          rating: widget.game.rating,
+          trophy: currentTrophy,
+          averageRating: widget.game.averageRating,
+          id: widget.game.id,
+          genres: widget.game.genres,
+          platforms: widget.game.platforms));
+        }),
+        child: Stack(
+          children: <Widget>[CachedNetworkImage(
+            imageUrl: widget.game.image,
+            placeholder: ((context, url) =>
+                Image.asset('assets/images/game-placeholder.png')),
+            height: 110,
+            width: 75,
+            fadeInDuration: const Duration(milliseconds: 200),
+            fadeOutDuration: const Duration(milliseconds: 200),
+          ), 
+          (currentTrophy != 0) ?
+          Padding(
+            padding: const EdgeInsets.only(top: 80),
+            child: Container(
+              width: 30, 
+              height: 30,
+              alignment: Alignment.center,
+              child: Image.asset(trophyImageSelection[currentTrophy]),
+            ),
+          ) : Container()],
+        ),
       );
     } else {
-      return Image.asset(
+      return InkWell(
+        onTap: (() {
+          if (currentTrophy == trophyImageSelection.length - 1) {
+            setState(() {
+              currentTrophy = 0;
+            });
+          } else {
+            setState(() {
+              currentTrophy += 1;
+            });
+          }
+          setState(() {
+            widget.game.trophy = currentTrophy;
+          });
+          GetIt.instance.get<UpdateMedium>().call(GameModel(
+          title: widget.game.title,
+          image: widget.game.image,
+          addedIn: widget.game.addedIn,
+          release: widget.game.release,
+          rating: widget.game.rating,
+          trophy: currentTrophy,
+          averageRating: widget.game.averageRating,
+          id: widget.game.id,
+          genres: widget.game.genres,
+          platforms: widget.game.platforms));
+        }),
+        child: Stack(
+          children: <Widget>[Image.asset(
         'assets/images/game-placeholder.png',
         height: 110,
         width: 75,
+      ), 
+          (currentTrophy != 0) ?
+          Padding(
+            padding: const EdgeInsets.only(top: 80),
+            child: Container(
+              width: 30, 
+              height: 30,
+              alignment: Alignment.center,
+              child: Image.asset(trophyImageSelection[currentTrophy]),
+            ),
+          ) : Container()],
+        ),
       );
     }
   }
 }
+
+                // SizedBox(
+                //   height: 50,
+                //   child: IconButton(
+                //     onPressed: _toggleTrophyImage,
+                //     icon: Image.asset(trophyImageSelection[currentTrophy]),
+                //   ),
+                // ),

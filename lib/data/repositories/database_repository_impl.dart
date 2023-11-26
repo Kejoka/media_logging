@@ -1,4 +1,6 @@
 
+import 'dart:developer';
+
 import 'package:media_logging/domain/repositories/database_repository.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
@@ -13,17 +15,22 @@ class DatabaseRepositoryImpl implements DatabaseRepository {
     return openDatabase(join(dbPath, "media_database.db"), version: 3,
         onCreate: (database, version) async {
       await database.execute(
-          "CREATE TABLE games (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, addedIn NUMBER, image TEXT, release TEXT, genres TEXT, platforms TEXT, averageRating REAL, medal NUMBER, trophy NUMBER)");
+          "CREATE TABLE games (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, addedIn NUMBER, image TEXT, release TEXT, genres TEXT, platforms TEXT, averageRating REAL, rating REAL DEFAULT 2.5, trophy NUMBER)");
       await database.execute(
-          "CREATE TABLE movies (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, image TEXT, genres TEXT, addedIn NUMBER, release TEXT, medal NUMBER, averageRating REAL)");
+          "CREATE TABLE movies (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, image TEXT, genres TEXT, addedIn NUMBER, release TEXT, rating REAL DEFAULT 2.5, averageRating REAL)");
       await database.execute(
-          "CREATE TABLE shows (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, image TEXT, genres TEXT, addedIn NUMBER, release TEXT, medal NUMBER, seasons TEXT, averageRating REAL, episode INT DEFAULT 0)");
+          "CREATE TABLE shows (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, image TEXT, genres TEXT, addedIn NUMBER, release TEXT, rating REAL DEFAULT 2.5, seasons TEXT, averageRating REAL, episode INT DEFAULT 0)");
       await database.execute(
-          "CREATE TABLE books (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, subtitle TEXT, image TEXT, author TEXT, medal NUMBER, averageRating REAL, pageCount NUMBER, release TEXT, addedIn NUMBER)");
+          "CREATE TABLE books (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, subtitle TEXT, image TEXT, author TEXT, rating REAL DEFAULT 2.5, averageRating REAL, pageCount NUMBER, release TEXT, addedIn NUMBER)");
     },
     onUpgrade: (database, oldVersion, newVersion) async {
-      if (newVersion == 3) {
-        await database.execute("ALTER TABLE shows ADD COLUMN episode INT DEFAULT 0");
+      log("Old Version: ${oldVersion.toString()}, New Version: ${newVersion.toString()}");
+      if (oldVersion < newVersion) {
+        oldVersion++;
+      }
+      for (oldVersion; oldVersion <= newVersion; oldVersion++) {
+        log("Performing Update Version ${oldVersion.toString()}");
+        await _performDBUpgrade(database, oldVersion);
       }
     });
   }
@@ -105,5 +112,23 @@ class DatabaseRepositoryImpl implements DatabaseRepository {
   Future<void> deleteDatabase() async {
     String dbPath = await getDatabasesPath();
     databaseFactory.deleteDatabase(join(dbPath, "media_database.db"));
+  }
+}
+
+Future<void> _performDBUpgrade(database, versionNumber) async {
+  switch(versionNumber) {
+    case 2:
+      await database.execute("ALTER TABLE shows ADD COLUMN episode INT DEFAULT 0");
+      break;
+    case 3:
+      await database.execute("ALTER TABLE games ADD COLUMN rating REAL DEFAULT 2.5");
+      await database.execute("ALTER TABLE movies ADD COLUMN rating REAL DEFAULT 2.5");
+      await database.execute("ALTER TABLE shows ADD COLUMN rating REAL DEFAULT 2.5");
+      await database.execute("ALTER TABLE books ADD COLUMN rating REAL DEFAULT 2.5");
+      await database.execute("ALTER TABLE games DROP COLUMN medal");
+      await database.execute("ALTER TABLE movies DROP COLUMN medal");
+      await database.execute("ALTER TABLE shows DROP COLUMN medal");
+      await database.execute("ALTER TABLE books DROP COLUMN medal");
+      break;
   }
 }

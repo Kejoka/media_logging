@@ -112,7 +112,7 @@ class _GameformState extends State<Gameform> {
         image: _chosenGame.image,
         addedIn: year.year,
         release: _chosenGame.release,
-        medal: 0,
+        rating: 2.5,
         trophy: 0,
         genres: _chosenGame.genres,
         platforms: _chosenGame.platforms,

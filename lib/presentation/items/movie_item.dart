@@ -1,5 +1,8 @@
+import 'dart:developer';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:get_it/get_it.dart';
 import 'package:media_logging/data/models/movie_model.dart';
 import 'package:media_logging/domain/use_cases/update_medium.dart';
@@ -32,11 +35,11 @@ class _MovieItemState extends State<MovieItem> {
     'assets/images/bronze.png',
     'assets/images/trash.png',
   ];
-  int currentRank = 0;
+  double currentRating = 2.5;
   
   @override
   Widget build(BuildContext context) {
-    currentRank = widget.movie.medal;
+    currentRating = widget.movie.rating;
     return Padding(
       padding: const EdgeInsets.all(5),
       child: Material(
@@ -61,12 +64,18 @@ class _MovieItemState extends State<MovieItem> {
           icon: Padding(
             padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
             child: SizedBox(
-              width: 60,
-              height: 60,
-              child: IconButton(
-                onPressed: _toggleRankImage,
-                icon: Image.asset(rankImageSelection[currentRank]),
-              ),
+              width: 20,
+              height: 100,
+              child: RatingBar(
+                initialRating: currentRating,
+                direction: Axis.vertical,
+                allowHalfRating: true,
+                itemCount: 5,
+                itemSize: 20,
+                ratingWidget: RatingWidget(full: const Icon(Icons.star, color: Colors.yellow), half: const Icon(Icons.star_half, color: Colors.yellow,), empty: const Icon(Icons.star_border, color: Colors.yellow,)), 
+                onRatingUpdate: (rating) {
+                  _updateRating(rating);
+              })
             ),
           ),
         ),
@@ -74,26 +83,19 @@ class _MovieItemState extends State<MovieItem> {
     );
   }
   /// Function that changes the rank/medal image and updates the changed Database entry
-  _toggleRankImage() {
-    if (currentRank == rankImageSelection.length - 1) {
-      setState(() {
-        currentRank = 0;
-      });
-    } else {
-      setState(() {
-        currentRank += 1;
-      });
-    }
+  _updateRating(rating) {
     setState(() {
-      widget.movie.medal = currentRank;
+      currentRating = rating;
+      widget.movie.rating = currentRating;
     });
+    log(currentRating.toString());
     GetIt.instance.get<UpdateMedium>().call(MovieModel(
         title: widget.movie.title,
         image: widget.movie.image,
         genres: widget.movie.genres,
         addedIn: widget.movie.addedIn,
         release: widget.movie.release,
-        medal: currentRank,
+        rating: currentRating,
         averageRating: widget.movie.averageRating,
         id: widget.movie.id));
   }

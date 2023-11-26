@@ -4,12 +4,12 @@ class Movie {
   final List<String> genres;
   final int addedIn;
   final DateTime? release;
-  int medal;
+  double rating;
   final int id;
   final double averageRating;
 
   Movie(this.title, this.image, this.genres, this.addedIn, this.release,
-      this.medal, this.averageRating, this.id);
+      this.rating, this.averageRating, this.id);
       
   // This function generates the string that will be displayed in the Movie Tile
   String getTileText() {

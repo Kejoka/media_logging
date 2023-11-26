@@ -15,7 +15,6 @@ import 'package:media_logging/presentation/items/stat_item.dart';
 import 'package:media_logging/presentation/stats_content_builder.dart';
 
 /// ListViewBuilder that builds the ListView depending on the given mediaIndex and
-/// appMode = 0 -> MediaContent   appMode = 1 -> StatContent
 
 class ListViewBuilder extends StatefulWidget {
   const ListViewBuilder(
@@ -25,7 +24,7 @@ class ListViewBuilder extends StatefulWidget {
       super.key});
   final int filterYear;
   final int mediaIndex;
-  final int appMode;
+  final String appMode;
   @override
   State<ListViewBuilder> createState() => _ListViewBuilderState();
 }
@@ -34,7 +33,7 @@ class _ListViewBuilderState extends State<ListViewBuilder> {
   @override
   Widget build(BuildContext context) {
     // MediaView
-    if (widget.appMode == 0) {
+    if (widget.appMode == "Medien-Regal") {
       return MediaContentBuilder(
         mediaIndex: widget.mediaIndex,
         filterYear: widget.filterYear,

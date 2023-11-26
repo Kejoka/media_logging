@@ -6,14 +6,14 @@ class DbBook {
   final String subtitle;
   final String image;
   final String author;
-  int medal;
+  double rating;
   final double averageRating;
   final int pageCount;
   final DateTime? release;
   final int addedIn;
   final int id;
 
-  DbBook(this.title, this.subtitle, this.image, this.author, this.medal,
+  DbBook(this.title, this.subtitle, this.image, this.author, this.rating,
       this.averageRating, this.pageCount, this.release, this.addedIn, this.id);
 
   // This function generates the string that will be displayed in the Book Tile

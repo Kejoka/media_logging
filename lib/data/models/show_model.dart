@@ -4,7 +4,7 @@ class ShowModel {
   final List<String> genres;
   final int addedIn;
   final DateTime? release;
-  final int medal;
+  final double rating;
   final int seasonsA;
   final int seasonsB;
   final int id;
@@ -17,7 +17,7 @@ class ShowModel {
     required this.genres,
     required this.addedIn,
     required this.release,
-    required this.medal,
+    required this.rating,
     required this.seasonsA,
     required this.seasonsB,
     required this.averageRating,
@@ -38,7 +38,7 @@ class ShowModel {
       }),
       "addedIn": addedIn,
       "release": release.toString(),
-      "medal": medal,
+      "rating": rating,
       "seasons":
           (seasonsA == seasonsB) ? seasonsA.toString() : "$seasonsA-$seasonsB",
       "averageRating": averageRating,
@@ -52,7 +52,7 @@ class ShowModel {
         genres = item["genres"].split(','),
         addedIn = item["addedIn"],
         release = DateTime.tryParse(item["release"]),
-        medal = item["medal"],
+        rating = item["rating"],
         seasonsA = (item["seasons"].contains('-'))
             ? int.parse(item["seasons"].substring(0, item["seasons"].indexOf('-')))
             : int.parse(item["seasons"]),

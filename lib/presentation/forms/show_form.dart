@@ -124,7 +124,7 @@ class _ShowFormState extends State<ShowForm> {
         genres: genres,
         addedIn: year.year,
         release: DateTime.tryParse(_chosenShow["first_air_date"]),
-        medal: 0,
+        rating: 2.5,
         seasonsA: 0,
         seasonsB: 0,
         episode: 0,

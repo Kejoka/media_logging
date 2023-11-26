@@ -188,7 +188,7 @@ class _ShowManualFormState extends State<ShowManualForm> {
                           id: widget.show?.id ?? -1,
                           title: titleText ?? widget.show?.title ?? "",
                           image: imageLink ?? widget.show?.image ?? "",
-                          medal: widget.show?.medal ?? 0,
+                          rating: widget.show?.rating ?? 2.5,
                           averageRating:
                               ratingVal ?? widget.show?.averageRating ?? 0.0,
                           release: newDate ?? widget.show?.release,
@@ -202,7 +202,7 @@ class _ShowManualFormState extends State<ShowManualForm> {
                     await GetIt.instance.get<CreateMedium>().call(ShowModel(
                           title: titleText ?? "Kein Titel",
                           image: imageLink ?? "",
-                          medal: 0,
+                          rating: 2.5,
                           averageRating: ratingVal ?? 0.0,
                           release: newDate ?? DateTime.now(),
                           addedIn: addedIn.year,

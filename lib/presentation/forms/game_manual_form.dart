@@ -165,7 +165,7 @@ class _GameManualFormState extends State<GameManualForm> {
                         id: widget.game?.id ?? -1,
                         title: titleText ?? widget.game?.title ?? "",
                         image: imageLink ?? widget.game?.image ?? "",
-                        medal: widget.game?.medal ?? 0,
+                        rating: widget.game?.rating ?? 2.5,
                         averageRating:
                             ratingVal ?? widget.game?.averageRating ?? 0.0,
                         release: newDate ?? widget.game?.release,
@@ -177,7 +177,7 @@ class _GameManualFormState extends State<GameManualForm> {
                     await GetIt.instance.get<CreateMedium>().call(GameModel(
                         title: titleText ?? "Kein Titel",
                         image: imageLink ?? "",
-                        medal: 0,
+                        rating: 2.5,
                         averageRating: ratingVal ?? 0.0,
                         release: newDate ?? DateTime.now(),
                         addedIn: addedIn.year,

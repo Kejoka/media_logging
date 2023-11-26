@@ -4,7 +4,7 @@ class MovieModel {
   final List<String> genres;
   final int addedIn;
   final DateTime? release;
-  int medal;
+  double rating;
   final int id;
   final double averageRating;
 
@@ -14,7 +14,7 @@ class MovieModel {
     required this.genres,
     required this.addedIn,
     required this.release,
-    required this.medal,
+    required this.rating,
     required this.averageRating,
     this.id = 0,
   });
@@ -32,7 +32,7 @@ class MovieModel {
       }),
       "addedIn": addedIn,
       "release": release.toString(),
-      "medal": medal,
+      "rating": rating,
       "averageRating": averageRating,
     };
   }
@@ -43,7 +43,7 @@ class MovieModel {
         genres = item["genres"].split(','),
         addedIn = item["addedIn"],
         release = DateTime.tryParse(item["release"]),
-        medal = item["medal"],
+        rating = item["rating"],
         id = item["id"],
         averageRating = item["averageRating"];
 }

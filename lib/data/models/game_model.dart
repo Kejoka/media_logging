@@ -7,7 +7,7 @@ class GameModel {
   final List<String> genres;
   final List<String> platforms;
   final double averageRating;
-  int medal;
+  double rating;
   int trophy;
   final int addedIn;
 
@@ -19,7 +19,7 @@ class GameModel {
     required this.genres,
     required this.platforms,
     required this.averageRating,
-    required this.medal,
+    required this.rating,
     required this.addedIn,
     required this.trophy,
   });
@@ -44,7 +44,7 @@ class GameModel {
         }
       }),
       "averageRating": averageRating,
-      "medal": medal,
+      "rating": rating,
       "addedIn": addedIn,
       "trophy": trophy,
     };
@@ -58,7 +58,7 @@ class GameModel {
         genres = item["genres"].split(','),
         platforms = item["platforms"].split(','),
         averageRating = item["averageRating"],
-        medal = item["medal"],
+        rating = item["rating"],
         addedIn = item["addedIn"],
         trophy = item["trophy"];
 }

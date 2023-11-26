@@ -115,7 +115,7 @@ class _BookFormState extends State<BookForm> {
             : "",
         addedIn: year.year,
         release: DateTime.tryParse(_chosenBook.info.rawPublishedDate),
-        medal: 0,
+        rating: 2.5,
         author: _chosenBook.info.authors.first,
         averageRating: _chosenBook.info.averageRating,
         pageCount: _chosenBook.info.pageCount);

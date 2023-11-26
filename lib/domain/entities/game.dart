@@ -6,7 +6,7 @@ class Game {
   final List<String> genres;
   final List<String> platforms;
   final double averageRating;
-  int medal;
+  double rating;
   int trophy;
   final int addedIn;
 
@@ -18,7 +18,7 @@ class Game {
     this.genres,
     this.platforms,
     this.averageRating,
-    this.medal,
+    this.rating,
     this.addedIn,
     this.trophy,
   );

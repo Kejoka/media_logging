@@ -4,7 +4,7 @@ class Show {
   final List<String> genres;
   final int addedIn;
   final DateTime? release;
-  int medal;
+  double rating;
   final int seasonsA;
   final int seasonsB;
   final int id;
@@ -12,7 +12,7 @@ class Show {
   int episode;
 
   Show(this.title, this.image, this.genres, this.addedIn, this.release,
-      this.medal, this.seasonsA, this.seasonsB, this.averageRating, this.episode, this.id);
+      this.rating, this.seasonsA, this.seasonsB, this.averageRating, this.episode, this.id);
       
   // This function generates the string that will be displayed in the Show Tile
   String getTileText() {

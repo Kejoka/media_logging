@@ -27,7 +27,7 @@ class MediaNavigator extends StatefulWidget {
 class _MediaNavigatorState extends State<MediaNavigator>
     with TickerProviderStateMixin {
   // 0 = Media List View, 1 = Statistics View
-  var _appMode = 0;
+  var _appMode = "Medien-Regal";
   final _appModeTexts = ["Medien-Regal", "Backlog", "Statistiken"];
   var _selectedYear = DateTime.now().year;
   dynamic _tabBarController;
@@ -36,22 +36,22 @@ class _MediaNavigatorState extends State<MediaNavigator>
   ListViewBuilder _gameListBuilder = ListViewBuilder(
     mediaIndex: 0,
     filterYear: DateTime.now().year,
-    appMode: 0,
+    appMode: "Medien-Regal",
   );
   ListViewBuilder _movieListBuilder = ListViewBuilder(
     mediaIndex: 1,
     filterYear: DateTime.now().year,
-    appMode: 0,
+    appMode: "Medien-Regal",
   );
   ListViewBuilder _showListBuilder = ListViewBuilder(
     mediaIndex: 2,
     filterYear: DateTime.now().year,
-    appMode: 0,
+    appMode: "Medien-Regal",
   );
   ListViewBuilder _bookListBuilder = ListViewBuilder(
     mediaIndex: 3,
     filterYear: DateTime.now().year,
-    appMode: 0,
+    appMode: "Medien-Regal",
   );
 
   @override
@@ -62,7 +62,7 @@ class _MediaNavigatorState extends State<MediaNavigator>
     /// listen to the swipe gesture when onTap is defined
     _tabBarController.addListener(() {
       _selectedYear = DateTime.now().year;
-      if (_appMode == 0) {
+      if (_appMode == "Medien-Regal") {
         _refreshMediaViewsFull();
       } else {
         // Refreshing all views in statistics mode caused some errors
@@ -85,16 +85,21 @@ class _MediaNavigatorState extends State<MediaNavigator>
                 (MediaQuery.of(context).platformBrightness == Brightness.dark)
                     ? Theme.of(context).canvasColor
                     : Theme.of(context).appBarTheme.backgroundColor,
-            title: InkWell(
-              child: Text(_appModeTexts[_appMode]),
-              onTap: () {
-                if (_appMode == 0) {
-                  _appMode = 1;
-                } else {
-                  _appMode = 0;
-                }
+            title: DropdownMenu<String>(
+              textStyle: const TextStyle(
+                fontSize: 20,
+              ),
+              inputDecorationTheme: const InputDecorationTheme(
+                border: InputBorder.none
+              ),
+              initialSelection: _appModeTexts.first,
+              onSelected: (String? value) {
+                _appMode = value ?? "Medien-Regal";
                 _refreshMediaViewsFull();
               },
+              dropdownMenuEntries: _appModeTexts.map<DropdownMenuEntry<String>>((String value) {
+                return DropdownMenuEntry<String>(value: value, label: value,);
+              }).toList(),
             ),
             bottom: TabBar(
               controller: _tabBarController,
@@ -147,7 +152,7 @@ class _MediaNavigatorState extends State<MediaNavigator>
   /// FloatingActionButton moved to a function for readability.
   /// The FloatingActionButton will only be shown if the appmode is 0 (media-view)
   _getFloatingActionButton() {
-    if (_appMode == 0) {
+    if (_appMode == "Medien-Regal") {
       return FloatingActionButton(
         onPressed: _showForm,
         // Dark mode colors I chose did not look good in light mode

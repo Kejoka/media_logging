@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:get_it/get_it.dart';
 import 'package:media_logging/data/models/db_book_model.dart';
 import 'package:media_logging/domain/entities/db_book.dart';
@@ -32,11 +33,11 @@ class _BookItemState extends State<BookItem> {
     'assets/images/bronze.png',
     'assets/images/trash.png',
   ];
-  int currentRank = 0;
+  double currentRating = 2.5;
 
   @override
   Widget build(BuildContext context) {
-    currentRank = widget.book.medal;
+    currentRating = widget.book.rating;
     return Padding(
       padding: const EdgeInsets.all(5),
       child: Material(
@@ -61,12 +62,18 @@ class _BookItemState extends State<BookItem> {
           icon: Padding(
             padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
             child: SizedBox(
-              width: 60,
-              height: 60,
-              child: IconButton(
-                onPressed: _toggleRankImage,
-                icon: Image.asset(rankImageSelection[currentRank]),
-              ),
+              width: 20,
+              height: 100,
+              child: RatingBar(
+                initialRating: currentRating,
+                direction: Axis.vertical,
+                allowHalfRating: true,
+                itemCount: 5,
+                itemSize: 20,
+                ratingWidget: RatingWidget(full: const Icon(Icons.star, color: Colors.yellow), half: const Icon(Icons.star_half, color: Colors.yellow,), empty: const Icon(Icons.star_border, color: Colors.yellow,)), 
+                onRatingUpdate: (rating) {
+                  _updateRating(rating);
+              })
             ),
           ),
         ),
@@ -74,18 +81,10 @@ class _BookItemState extends State<BookItem> {
     );
   }
   /// Function that changes the rank/medal image and updates the changed Database entry
-  _toggleRankImage() {
-    if (currentRank == rankImageSelection.length - 1) {
-      setState(() {
-        currentRank = 0;
-      });
-    } else {
-      setState(() {
-        currentRank += 1;
-      });
-    }
+  _updateRating(rating) {
     setState(() {
-      widget.book.medal = currentRank;
+      currentRating = rating;
+      widget.book.rating = currentRating;
     });
     GetIt.instance.get<UpdateMedium>().call(DBBookModel(
         title: widget.book.title,
@@ -93,7 +92,7 @@ class _BookItemState extends State<BookItem> {
         image: widget.book.image,
         addedIn: widget.book.addedIn,
         release: widget.book.release,
-        medal: currentRank,
+        rating: currentRating,
         author: widget.book.author,
         averageRating: widget.book.averageRating,
         pageCount: widget.book.pageCount,
