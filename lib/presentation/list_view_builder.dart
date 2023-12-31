@@ -1,6 +1,13 @@
+import 'dart:developer';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:media_logging/data/models/db_book_model.dart';
+import 'package:media_logging/data/models/game_model.dart';
+import 'package:media_logging/data/models/movie_model.dart';
+import 'package:media_logging/data/models/show_model.dart';
+import 'package:media_logging/domain/use_cases/create_medium.dart';
 import 'package:media_logging/domain/use_cases/delete_medium.dart';
 import 'package:media_logging/presentation/forms/book_manual_form.dart';
 import 'package:media_logging/presentation/forms/game_manual_form.dart';
@@ -33,10 +40,12 @@ class _ListViewBuilderState extends State<ListViewBuilder> {
   @override
   Widget build(BuildContext context) {
     // MediaView
-    if (widget.appMode == "Medien-Regal") {
+    log(widget.appMode);
+    if (widget.appMode != "Statistiken") {
       return MediaContentBuilder(
         mediaIndex: widget.mediaIndex,
         filterYear: widget.filterYear,
+        appMode: widget.appMode,
         builder: (media) => ListView.builder(
           padding: const EdgeInsets.only(bottom: 80),
           itemCount: media.length,
@@ -47,11 +56,13 @@ class _ListViewBuilderState extends State<ListViewBuilder> {
               case 0:
                 return GameItem(
                   game: medium,
+                  appMode: widget.appMode,
                   onLongPress: () => showDialog(
                       context: context,
                       builder: (BuildContext context) =>
-                          deleteItem(medium.title, medium.id, "games")),
+                          longPress(medium, "games")),
                   onTap: () async {
+                    log(medium.id.toString());
                     await Navigator.of(context).push(MaterialPageRoute(
                         builder: (_) => GameManualForm(
                               game: medium,
@@ -63,10 +74,11 @@ class _ListViewBuilderState extends State<ListViewBuilder> {
               case 1:
                 return MovieItem(
                   movie: medium,
+                  appMode: widget.appMode,
                   onLongPress: () => showDialog(
                       context: context,
                       builder: (BuildContext context) =>
-                          deleteItem(medium.title, medium.id, "movies")),
+                          longPress(medium, "movies")),
                   onTap: () async {
                     await Navigator.of(context).push(MaterialPageRoute(
                         builder: (_) => MovieManualForm(
@@ -79,10 +91,11 @@ class _ListViewBuilderState extends State<ListViewBuilder> {
               case 2:
                 return ShowItem(
                   show: medium,
+                  appMode: widget.appMode,
                   onLongPress: () => showDialog(
                       context: context,
                       builder: (BuildContext context) =>
-                          deleteItem(medium.title, medium.id, "shows")),
+                          longPress(medium, "shows")),
                   onTap: () async {
                     await Navigator.of(context).push(MaterialPageRoute(
                         builder: (_) => ShowManualForm(
@@ -95,10 +108,11 @@ class _ListViewBuilderState extends State<ListViewBuilder> {
               case 3:
                 return BookItem(
                   book: medium,
+                  appMode: widget.appMode,
                   onLongPress: () => showDialog(
                       context: context,
                       builder: (BuildContext context) =>
-                          deleteItem(medium.title, medium.id, "books")),
+                          longPress(medium, "books")),
                   onTap: () async {
                     await Navigator.of(context).push(MaterialPageRoute(
                         builder: (_) => BookManualForm(
@@ -132,26 +146,108 @@ class _ListViewBuilderState extends State<ListViewBuilder> {
     }
   }
 
-  /// Extracted onlongPressto to a function
-  deleteItem(String title, int id, String mediaType) {
-    return CupertinoAlertDialog(
-      title: Text("$title löschen?"),
-      actions: [
-        CupertinoDialogAction(
-          child: const Text("Abbrechen"),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-        CupertinoDialogAction(
-          child: const Text("Löschen"),
-          onPressed: () {
-            GetIt.instance.get<DeleteMedium>().call(id, mediaType);
-            setState(() {});
-            Navigator.of(context).pop();
-          },
-        )
-      ],
-    );
+  /// Extracted onlongPress to to a function
+  longPress(dynamic medium, String mediaType) {
+    log(medium.addedIn.toString());
+    if (widget.appMode == "Medien-Regal") {
+      return CupertinoAlertDialog(
+        title: Text("${medium.title} löschen?"),
+        actions: [
+          CupertinoDialogAction(
+            child: const Text("Abbrechen"),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          CupertinoDialogAction(
+            child: const Text("Löschen"),
+            onPressed: () {
+              GetIt.instance.get<DeleteMedium>().call(medium.id, mediaType);
+              setState(() {});
+              Navigator.of(context).pop();
+            },
+          )
+        ],
+      );
+    } else {
+      return CupertinoAlertDialog(
+        title: Text("${medium.title} aus dem Backlog verschieben?"),
+        actions: [
+          CupertinoDialogAction(
+            child: const Text("Abbrechen"),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          CupertinoDialogAction(
+            child: const Text("Verschieben"),
+            onPressed: () {
+              setState(() {
+                medium.backlogged = 2;
+              });
+              switch (widget.mediaIndex) {
+                case 0:
+                  GetIt.instance.get<CreateMedium>().call(GameModel(
+                      title: medium.title,
+                      image: medium.image,
+                      release: medium.release,
+                      genres: medium.genres,
+                      platforms: medium.platforms,
+                      averageRating: medium.averageRating,
+                      rating: medium.rating,
+                      addedIn: DateTime.now().year,
+                      trophy: medium.trophy,
+                      backlogged: medium.backlogged));
+                  GetIt.instance.get<DeleteMedium>().call(medium.id, 'games');
+                  break;
+                case 1:
+                  GetIt.instance.get<CreateMedium>().call(MovieModel(
+                      title: medium.title,
+                      image: medium.image,
+                      genres: medium.genres,
+                      addedIn: DateTime.now().year,
+                      release: medium.release,
+                      rating: medium.rating,
+                      averageRating: medium.averageRating,
+                      backlogged: medium.backlogged));
+                  GetIt.instance.get<DeleteMedium>().call(medium.id, 'movies');
+                  break;
+                case 2:
+                  GetIt.instance.get<CreateMedium>().call(ShowModel(
+                      title: medium.title,
+                      image: medium.image,
+                      genres: medium.genres,
+                      addedIn: DateTime.now().year,
+                      release: medium.release,
+                      rating: medium.rating,
+                      seasonsA: medium.seasonsA,
+                      seasonsB: medium.seasonsB,
+                      averageRating: medium.averageRating,
+                      episode: medium.episode,
+                      backlogged: medium.backlogged));
+                  GetIt.instance.get<DeleteMedium>().call(medium.id, 'shows');
+                  break;
+                case 3:
+                  GetIt.instance.get<CreateMedium>().call(DBBookModel(
+                      title: medium.title,
+                      subtitle: medium.subtitle,
+                      image: medium.image,
+                      author: medium.author,
+                      rating: medium.rating,
+                      averageRating: medium.averageRating,
+                      pageCount: medium.pageCount,
+                      release: medium.release,
+                      addedIn: DateTime.now().year,
+                      backlogged: medium.backlogged));
+                  GetIt.instance.get<DeleteMedium>().call(medium.id, 'books');
+                  break;
+              }
+              // setState(() {});
+              Navigator.of(context).pop();
+            },
+          )
+        ],
+      );
+    }
   }
 }

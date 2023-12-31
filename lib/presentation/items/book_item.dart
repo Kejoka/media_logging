@@ -13,11 +13,13 @@ class BookItem extends StatefulWidget {
   final DbBook book;
   final Function()? onTap;
   final Function()? onLongPress;
+  final String? appMode;
 
   const BookItem({
     required this.book,
     this.onTap,
     this.onLongPress,
+    this.appMode,
     Key? key,
   }) : super(key: key);
 
@@ -59,10 +61,10 @@ class _BookItemState extends State<BookItem> {
           onLongPress: widget.onLongPress,
           padding: EdgeInsets.zero,
           margin: EdgeInsets.zero,
-          icon: Padding(
+          icon: (widget.appMode == "Medien-Regal") ? Padding(
             padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
             child: SizedBox(
-              width: 20,
+              width: 25,
               height: 100,
               child: RatingBar(
                 initialRating: currentRating,
@@ -70,12 +72,13 @@ class _BookItemState extends State<BookItem> {
                 allowHalfRating: true,
                 itemCount: 5,
                 itemSize: 20,
+                glowRadius: 1,
                 ratingWidget: RatingWidget(full: const Icon(Icons.star, color: Colors.yellow), half: const Icon(Icons.star_half, color: Colors.yellow,), empty: const Icon(Icons.star_border, color: Colors.yellow,)), 
                 onRatingUpdate: (rating) {
                   _updateRating(rating);
               })
             ),
-          ),
+          ) : null,
         ),
       ),
     );
@@ -96,7 +99,8 @@ class _BookItemState extends State<BookItem> {
         author: widget.book.author,
         averageRating: widget.book.averageRating,
         pageCount: widget.book.pageCount,
-        id: widget.book.id));
+        id: widget.book.id,
+        backlogged: widget.book.backlogged));
   }
   /// Function that handles image loading
   _generateImage() {

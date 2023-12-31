@@ -12,8 +12,9 @@ import 'package:media_logging/domain/use_cases/update_medium.dart';
 /// object is passed
 
 class GameManualForm extends StatefulWidget {
-  const GameManualForm({this.game, super.key});
+  const GameManualForm({this.appMode, this.game, super.key});
   final Game? game;
+  final String? appMode;
   @override
   State<GameManualForm> createState() => _GameManualFormState();
 }
@@ -140,7 +141,7 @@ class _GameManualFormState extends State<GameManualForm> {
                 ),
               ],
             ),
-            (widget.game == null)
+            (widget.game == null && widget.appMode == "Medien-Regal")
                 ? SizedBox(
                     height: 300,
                     child: YearPicker(
@@ -159,6 +160,10 @@ class _GameManualFormState extends State<GameManualForm> {
                   backgroundColor: Theme.of(context).primaryColor,
                 ),
                 onPressed: () async {
+                  int backlogVal = 0;
+                  if (widget.appMode == "Backlog") {
+                    backlogVal = 1;
+                  }
                   if (widget.game != null) {
                     // Despite the null check I still have to write game? for some reason
                     await GetIt.instance.get<UpdateMedium>().call(GameModel(
@@ -172,7 +177,8 @@ class _GameManualFormState extends State<GameManualForm> {
                         addedIn: widget.game?.addedIn ?? DateTime.now().year,
                         genres: genreList ?? widget.game?.genres ?? [],
                         platforms: platformList ?? widget.game?.platforms ?? [],
-                        trophy: widget.game?.trophy ?? 0));
+                        trophy: widget.game?.trophy ?? 0,
+                        backlogged: backlogVal));
                   } else {
                     await GetIt.instance.get<CreateMedium>().call(GameModel(
                         title: titleText ?? "Kein Titel",
@@ -183,7 +189,8 @@ class _GameManualFormState extends State<GameManualForm> {
                         addedIn: addedIn.year,
                         genres: genreList ?? [],
                         platforms: platformList ?? [],
-                        trophy: 0));
+                        trophy: 0,
+                        backlogged: backlogVal));
                   }
                   Navigator.of(this.context).pop(addedIn);
                 },

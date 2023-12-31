@@ -1,29 +1,27 @@
-
 import 'dart:developer';
-
 import 'package:media_logging/domain/repositories/database_repository.dart';
 import 'package:path/path.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:file_picker/file_picker.dart';
 import 'dart:io';
 
 /// Repositroy that handles all database accesses that affect the entire databse
-
+/// Guide for magic numbers (Bad practice, I know): backlogged: 0 = added to DB right away, 1 = currently backlogged, 2 = moved from backlog
 class DatabaseRepositoryImpl implements DatabaseRepository {
   Future<Database> initDB() async {
     String dbPath = await getDatabasesPath();
-    return openDatabase(join(dbPath, "media_database.db"), version: 3,
-        onCreate: (database, version) async {
+    Database db = await openDatabase(join(dbPath, "media_database.db"),
+        version: 4, onCreate: (database, version) async {
       await database.execute(
-          "CREATE TABLE games (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, addedIn NUMBER, image TEXT, release TEXT, genres TEXT, platforms TEXT, averageRating REAL, rating REAL DEFAULT 2.5, trophy NUMBER)");
+          "CREATE TABLE games (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, addedIn NUMBER, image TEXT, release TEXT, genres TEXT, platforms TEXT, averageRating REAL, rating REAL DEFAULT 2.5, trophy NUMBER, backlogged INT DEFAULT 0)");
       await database.execute(
-          "CREATE TABLE movies (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, image TEXT, genres TEXT, addedIn NUMBER, release TEXT, rating REAL DEFAULT 2.5, averageRating REAL)");
+          "CREATE TABLE movies (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, image TEXT, genres TEXT, addedIn NUMBER, release TEXT, rating REAL DEFAULT 2.5, averageRating REAL, backlogged INT DEFAULT 0)");
       await database.execute(
-          "CREATE TABLE shows (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, image TEXT, genres TEXT, addedIn NUMBER, release TEXT, rating REAL DEFAULT 2.5, seasons TEXT, averageRating REAL, episode INT DEFAULT 0)");
+          "CREATE TABLE shows (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, image TEXT, genres TEXT, addedIn NUMBER, release TEXT, rating REAL DEFAULT 2.5, seasons TEXT, averageRating REAL, episode INT DEFAULT 0, backlogged INT DEFAULT 0)");
       await database.execute(
-          "CREATE TABLE books (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, subtitle TEXT, image TEXT, author TEXT, rating REAL DEFAULT 2.5, averageRating REAL, pageCount NUMBER, release TEXT, addedIn NUMBER)");
-    },
-    onUpgrade: (database, oldVersion, newVersion) async {
+          "CREATE TABLE books (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, subtitle TEXT, image TEXT, author TEXT, rating REAL DEFAULT 2.5, averageRating REAL, pageCount NUMBER, release TEXT, addedIn NUMBER, backlogged INT DEFAULT 0)");
+    }, onUpgrade: (database, oldVersion, newVersion) async {
       log("Old Version: ${oldVersion.toString()}, New Version: ${newVersion.toString()}");
       if (oldVersion < newVersion) {
         oldVersion++;
@@ -33,6 +31,7 @@ class DatabaseRepositoryImpl implements DatabaseRepository {
         await _performDBUpgrade(database, oldVersion);
       }
     });
+    return db;
   }
 
   @override
@@ -79,29 +78,42 @@ class DatabaseRepositoryImpl implements DatabaseRepository {
 
   @override
   Future<bool> exportDatabase() async {
-    String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+    // String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+    // log(selectedDirectory!);
     String dbPath = await getDatabasesPath();
-    File dbFile = File(join(dbPath, "media_database.db"));
-    if (selectedDirectory != null) {
-      String backupFile = join(selectedDirectory, "media_database.db");
-      dbFile.copy(backupFile);
-      return true;
-    } else {
-      return false;
-    }
+    // File dbFile = File(join(dbPath, "media_database.db"));
+    // if (selectedDirectory != null) {
+    ShareResult shareResult;
+    log("Exporting data..");
+    // String backupFile = join(selectedDirectory, "media_database.db");
+    final sharedFile = <XFile>[];
+    sharedFile.add(
+        XFile(join(dbPath, "media_database.db"), name: "media_database.db"));
+    shareResult = await Share.shareXFiles(sharedFile);
+    // await dbFile.copy(backupFile);
+    log(shareResult.raw);
+    return true;
+    // return true;
+    // } else {
+    // log("No folder chosen");
+    // return false;
+    // }
   }
 
   @override
   Future<bool> importDatabase() async {
+    // Dangerous but woring temporary fix
     FilePickerResult? chosenBackupFile = await FilePicker.platform.pickFiles();
     FilePickerResult chosenBackupFileNotNull;
     if (chosenBackupFile != null) {
       // Flutter did not accept chosenBackupFile.files.single.path despite being within
       // the null check for some reason.
+      deleteDatabase();
       chosenBackupFileNotNull = chosenBackupFile;
       var importFile = File(chosenBackupFileNotNull.files.single.path ?? "");
       String dbPath = await getDatabasesPath();
-      importFile.copy(join(dbPath, "media_database.db"));
+      await importFile.copy(join(dbPath, "media_database.db"));
+      await initDB();
       return true;
     } else {
       return false;
@@ -116,19 +128,34 @@ class DatabaseRepositoryImpl implements DatabaseRepository {
 }
 
 Future<void> _performDBUpgrade(database, versionNumber) async {
-  switch(versionNumber) {
+  switch (versionNumber) {
     case 2:
-      await database.execute("ALTER TABLE shows ADD COLUMN episode INT DEFAULT 0");
+      await database
+          .execute("ALTER TABLE shows ADD COLUMN episode INT DEFAULT 0");
       break;
     case 3:
-      await database.execute("ALTER TABLE games ADD COLUMN rating REAL DEFAULT 2.5");
-      await database.execute("ALTER TABLE movies ADD COLUMN rating REAL DEFAULT 2.5");
-      await database.execute("ALTER TABLE shows ADD COLUMN rating REAL DEFAULT 2.5");
-      await database.execute("ALTER TABLE books ADD COLUMN rating REAL DEFAULT 2.5");
+      await database
+          .execute("ALTER TABLE games ADD COLUMN rating REAL DEFAULT 2.5");
+      await database
+          .execute("ALTER TABLE movies ADD COLUMN rating REAL DEFAULT 2.5");
+      await database
+          .execute("ALTER TABLE shows ADD COLUMN rating REAL DEFAULT 2.5");
+      await database
+          .execute("ALTER TABLE books ADD COLUMN rating REAL DEFAULT 2.5");
       await database.execute("ALTER TABLE games DROP COLUMN medal");
       await database.execute("ALTER TABLE movies DROP COLUMN medal");
       await database.execute("ALTER TABLE shows DROP COLUMN medal");
       await database.execute("ALTER TABLE books DROP COLUMN medal");
+      break;
+    case 4:
+      await database
+          .execute("ALTER TABLE games ADD COLUMN backlogged INT DEFAULT 0");
+      await database
+          .execute("ALTER TABLE movies ADD COLUMN backlogged INT DEFAULT 0");
+      await database
+          .execute("ALTER TABLE shows ADD COLUMN backlogged INT DEFAULT 0");
+      await database
+          .execute("ALTER TABLE books ADD COLUMN backlogged INT DEFAULT 0");
       break;
   }
 }

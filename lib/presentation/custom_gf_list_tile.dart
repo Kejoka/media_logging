@@ -1,6 +1,5 @@
-/// Slightly modified code from https://pub.dev/packages/getwidget
-
 import 'package:flutter/material.dart';
+/// Slightly modified code from https://pub.dev/packages/getwidget
 
 class GFListTileCustom extends StatelessWidget {
   /// Creates ListTile with leading, title, trailing, image widget for almost every type of ListTile design.

@@ -5,7 +5,7 @@ class GetAllMedia {
 
   GetAllMedia(this._mediaRepository);
 
-  Future<List> call(int filterYear, String mediaType) {
-    return _mediaRepository.getAll(filterYear, mediaType);
+  Future<List> call(int filterYear, String mediaType, String appMode) {
+    return _mediaRepository.getAll(filterYear, mediaType, appMode);
   }
 }

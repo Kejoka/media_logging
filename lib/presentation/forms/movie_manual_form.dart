@@ -11,8 +11,9 @@ import 'package:media_logging/domain/use_cases/update_medium.dart';
 /// object is passed
 
 class MovieManualForm extends StatefulWidget {
-  const MovieManualForm({this.movie, super.key});
+  const MovieManualForm({this.appMode, this.movie, super.key});
   final Movie? movie;
+  final String? appMode;
   @override
   State<MovieManualForm> createState() => _MovieManualFormState();
 }
@@ -118,7 +119,7 @@ class _MovieManualFormState extends State<MovieManualForm> {
                 ),
               ],
             ),
-            (widget.movie == null)
+            (widget.movie == null && widget.appMode == "Medien-Regal")
                 ? SizedBox(
                   height: 300,
                     child: YearPicker(
@@ -137,6 +138,10 @@ class _MovieManualFormState extends State<MovieManualForm> {
                   backgroundColor: Theme.of(context).primaryColor,
                 ),
                 onPressed: () async {
+                  int backlogVal = 0;
+                  if (widget.appMode == "Backlog") {
+                    backlogVal = 1;
+                  }
                   if (widget.movie != null) {
                     // Despite the null check I still have to write movie? for some reason
                     await GetIt.instance.get<UpdateMedium>().call(MovieModel(
@@ -148,7 +153,8 @@ class _MovieManualFormState extends State<MovieManualForm> {
                             ratingVal ?? widget.movie?.averageRating ?? 0.0,
                         release: newDate ?? widget.movie?.release,
                         addedIn: widget.movie?.addedIn ?? DateTime.now().year,
-                        genres: genreList ?? widget.movie?.genres ?? []));
+                        genres: genreList ?? widget.movie?.genres ?? [],
+                        backlogged: backlogVal));
                   } else {
                     await GetIt.instance.get<CreateMedium>().call(MovieModel(
                           title: titleText ?? "Kein Titel",
@@ -158,6 +164,7 @@ class _MovieManualFormState extends State<MovieManualForm> {
                           release: newDate ?? DateTime.now(),
                           addedIn: addedIn.year,
                           genres: genreList ?? [],
+                          backlogged: backlogVal
                         ));
                   }
                   Navigator.of(this.context).pop(addedIn);

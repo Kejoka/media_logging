@@ -67,25 +67,31 @@ Future<void> main() async {
   await dotenv.load();
   SharedPreferences prefs = await SharedPreferences.getInstance();
   // Make sure the IGDB Key is still valid
-  if (prefs.getString('igdb') == null && dotenv.env['IGDB_CLIENT'] != null && dotenv.env['IGDB_SECRET'] != null) {
-    final result = await http.post(Uri.parse("https://id.twitch.tv/oauth2/token?client_id=${dotenv.env['IGDB_CLIENT']}&client_secret=${dotenv.env['IGDB_SECRET']}&grant_type=client_credentials"));
+  if (prefs.getString('igdb') == null &&
+      dotenv.env['IGDB_CLIENT'] != null &&
+      dotenv.env['IGDB_SECRET'] != null) {
+    final result = await http.post(Uri.parse(
+        "https://id.twitch.tv/oauth2/token?client_id=${dotenv.env['IGDB_CLIENT']}&client_secret=${dotenv.env['IGDB_SECRET']}&grant_type=client_credentials"));
     final jsonRes = jsonDecode(result.body);
     String igdbKey = jsonRes['access_token'].toString();
     prefs.setString('igdb', igdbKey);
-  }
-  else {
-    if (dotenv.env['IGDB_CLIENT'] != null && dotenv.env['IGDB_SECRET'] != null) {
+  } else {
+    if (dotenv.env['IGDB_CLIENT'] != null &&
+        dotenv.env['IGDB_SECRET'] != null) {
       final result = await http.post(
-          Uri.parse("https://api.igdb.com/v4/games/"),
-          headers: {
-            "Client-ID": dotenv.env['IGDB_CLIENT'] ?? "",
-            "Authorization": "Bearer ${prefs.getString('igdb')}",
-            "Accept": "application/json"
-          },);
+        Uri.parse("https://api.igdb.com/v4/games/"),
+        headers: {
+          "Client-ID": dotenv.env['IGDB_CLIENT'] ?? "",
+          "Authorization": "Bearer ${prefs.getString('igdb')}",
+          "Accept": "application/json"
+        },
+      );
       log(result.statusCode.toString());
+
       /// Return empty list in case api authorization fails
       if (result.statusCode == 401) {
-        final result = await http.post(Uri.parse("https://id.twitch.tv/oauth2/token?client_id=${dotenv.env['IGDB_CLIENT']}&client_secret=${dotenv.env['IGDB_SECRET']}&grant_type=client_credentials"));
+        final result = await http.post(Uri.parse(
+            "https://id.twitch.tv/oauth2/token?client_id=${dotenv.env['IGDB_CLIENT']}&client_secret=${dotenv.env['IGDB_SECRET']}&grant_type=client_credentials"));
         final jsonRes = jsonDecode(result.body);
         String igdbKey = jsonRes['access_token'].toString();
         prefs.setString('igdb', igdbKey);
@@ -96,7 +102,8 @@ Future<void> main() async {
             "Client-ID": dotenv.env['IGDB_CLIENT'] ?? "",
             "Authorization": "Bearer ${prefs.getString('igdb')}",
             "Accept": "application/json"
-          },);
+          },
+        );
         log(resultB.statusCode.toString());
       }
     }

@@ -14,11 +14,13 @@ class ShowItem extends StatefulWidget {
   final Show show;
   final Function()? onTap;
   final Function()? onLongPress;
+  final String? appMode;
 
   const ShowItem({
     required this.show,
     this.onTap,
     this.onLongPress,
+    this.appMode,
     Key? key,
   }) : super(key: key);
 
@@ -68,12 +70,13 @@ class _ShowItemState extends State<ShowItem> {
           onLongPress: widget.onLongPress,
           padding: EdgeInsets.zero,
           margin: EdgeInsets.zero,
-          icon: Padding(
+          icon: (widget.appMode == "Medien-Regal") ? Padding(
             padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
             child: SizedBox(
-              width: 20,
+              width: 25,
               height: 100,
               child: RatingBar(
+                glowRadius: 1,
                 initialRating: currentRating,
                 direction: Axis.vertical,
                 allowHalfRating: true,
@@ -84,7 +87,7 @@ class _ShowItemState extends State<ShowItem> {
                   _updateRating(rating);
               })
             ),
-          ),
+          ) : null,
         ),
       ),
     );
@@ -107,7 +110,8 @@ class _ShowItemState extends State<ShowItem> {
         seasonsB: widget.show.seasonsB,
         id: widget.show.id,
         averageRating: widget.show.averageRating,
-        episode: currentEpisode));
+        episode: currentEpisode,
+        backlogged: widget.show.backlogged));
   }
   /// Function that handles image loading
   _generateImage() {
@@ -129,7 +133,8 @@ class _ShowItemState extends State<ShowItem> {
             seasonsB: widget.show.seasonsB,
             id: widget.show.id,
             averageRating: widget.show.averageRating,
-            episode: widget.show.episode));
+            episode: widget.show.episode,
+            backlogged: widget.show.backlogged));
         }),
         onLongPress: () {
           if (currentEpisode > 0) {
@@ -148,7 +153,8 @@ class _ShowItemState extends State<ShowItem> {
               seasonsB: widget.show.seasonsB,
               id: widget.show.id,
               averageRating: widget.show.averageRating,
-              episode: widget.show.episode));
+              episode: widget.show.episode,
+              backlogged: widget.show.backlogged));
           }
         },
         child: Stack(
@@ -198,7 +204,8 @@ class _ShowItemState extends State<ShowItem> {
             seasonsB: widget.show.seasonsB,
             id: widget.show.id,
             averageRating: widget.show.averageRating,
-            episode: widget.show.episode));
+            episode: widget.show.episode,
+            backlogged: widget.show.backlogged));
         }),
         onLongPress: () {
           if (currentEpisode > 0) {
@@ -217,7 +224,8 @@ class _ShowItemState extends State<ShowItem> {
               seasonsB: widget.show.seasonsB,
               id: widget.show.id,
               averageRating: widget.show.averageRating,
-              episode: widget.show.episode));
+              episode: widget.show.episode,
+              backlogged: widget.show.backlogged));
           }
         },
         child: Stack(

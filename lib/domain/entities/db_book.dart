@@ -12,9 +12,10 @@ class DbBook {
   final DateTime? release;
   final int addedIn;
   final int id;
+  int backlogged;
 
   DbBook(this.title, this.subtitle, this.image, this.author, this.rating,
-      this.averageRating, this.pageCount, this.release, this.addedIn, this.id);
+      this.averageRating, this.pageCount, this.release, this.addedIn, this.id, this.backlogged);
 
   // This function generates the string that will be displayed in the Book Tile
   String getTileText() {
@@ -29,8 +30,12 @@ class DbBook {
       returnString += "\nDurchschnittliche Bewertung: $averageRating";
     }
     if (release != null) {
+      String grammarFix = "Erschienen";
+      if (release!.isAfter(DateTime.now())) {
+        grammarFix = "Erscheint";
+      }
       returnString +=
-          "\nErschienen: ${release?.day}.${release?.month}.${release?.year}";
+          "\n$grammarFix: ${release?.day}.${release?.month}.${release?.year}";
     }
     return returnString;
   }

@@ -9,6 +9,7 @@ class DBBookModel {
   final DateTime? release;
   final int addedIn;
   final int id;
+  final int backlogged;
 
   DBBookModel({
     required this.title,
@@ -20,6 +21,7 @@ class DBBookModel {
     required this.pageCount,
     required this.release,
     required this.addedIn,
+    required this.backlogged,
     this.id = 0,
   });
 
@@ -34,6 +36,7 @@ class DBBookModel {
       "pageCount": pageCount,
       "release": release.toString(),
       "addedIn": addedIn,
+      "backlogged": backlogged,
     };
   }
 
@@ -47,5 +50,6 @@ class DBBookModel {
         pageCount = item["pageCount"],
         release = DateTime.tryParse(item["release"]),
         addedIn = item["addedIn"],
-        id = item["id"];
+        id = item["id"],
+        backlogged = item["backlogged"];
 }

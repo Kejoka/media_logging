@@ -12,7 +12,8 @@ import 'package:media_logging/presentation/forms/show_manual_form.dart';
 /// based on the user input
 
 class ShowForm extends StatefulWidget {
-  const ShowForm({super.key});
+  final String? appMode;
+  const ShowForm({this.appMode, super.key});
 
   @override
   State<ShowForm> createState() => _ShowFormState();
@@ -31,7 +32,7 @@ class _ShowFormState extends State<ShowForm> {
       child: Material(
         borderRadius: BorderRadius.circular(10),
         child: SizedBox(
-          height: 500,
+          height: (widget.appMode == "Medien-Regal") ? 500 : 200,
           child: Column(
             children: [
               TypeAheadField(
@@ -49,7 +50,7 @@ class _ShowFormState extends State<ShowForm> {
                 suggestionsCallback: (pattern) async {
                   return await GetIt.instance
                       .get<GetSuggestions>()
-                      .call(pattern, "shows");
+                      .call(pattern, "shows", widget.appMode);
                 },
                 suggestionsBoxDecoration: const SuggestionsBoxDecoration(
                     constraints: BoxConstraints(
@@ -73,7 +74,7 @@ class _ShowFormState extends State<ShowForm> {
                   });
                 },
               ),
-              Expanded(
+              (widget.appMode == "Medien-Regal") ? Expanded(
                 child: YearPicker(
                     firstDate: DateTime(DateTime.now().year - 15),
                     lastDate: DateTime(DateTime.now().year + 1),
@@ -83,12 +84,12 @@ class _ShowFormState extends State<ShowForm> {
                         year = selectedYear;
                       });
                     }),
-              ),
+              ) : const SizedBox(width: 100, height: 20,),
               ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).primaryColor,
                   ),
-                  onPressed: _suggestionChosen ? _addShow : null,
+                  onPressed: _suggestionChosen ? () => _addShow(widget.appMode) : null,
                   child: const Text("Hinzufügen")),
               ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -108,7 +109,11 @@ class _ShowFormState extends State<ShowForm> {
     ));
   }
 
-  _addShow() async {
+  _addShow(String? appMode) async {
+    int backlogVal = 0;
+    if (appMode == "Backlog") {
+      backlogVal = 1;
+    }
     var genres = await GetIt.instance
         .get<GetGenres>()
         .call(_chosenShow["genre_ids"], "shows");
@@ -128,6 +133,7 @@ class _ShowFormState extends State<ShowForm> {
         seasonsA: 0,
         seasonsB: 0,
         episode: 0,
+        backlogged: backlogVal,
       /// API changed the amount of decimals from 1 to 3 during development and this
       /// seems like the simplest way to ensure consitent formatting
       averageRating: double.tryParse(

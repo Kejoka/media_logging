@@ -7,17 +7,18 @@ class MovieModel {
   double rating;
   final int id;
   final double averageRating;
+  final int backlogged;
 
-  MovieModel({
-    required this.title,
-    required this.image,
-    required this.genres,
-    required this.addedIn,
-    required this.release,
-    required this.rating,
-    required this.averageRating,
-    this.id = 0,
-  });
+  MovieModel(
+      {required this.title,
+      required this.image,
+      required this.genres,
+      required this.addedIn,
+      required this.release,
+      required this.rating,
+      required this.averageRating,
+      this.id = 0,
+      required this.backlogged});
 
   Map<String, dynamic> toMap() {
     return {
@@ -34,6 +35,7 @@ class MovieModel {
       "release": release.toString(),
       "rating": rating,
       "averageRating": averageRating,
+      "backlogged": backlogged,
     };
   }
 
@@ -45,5 +47,6 @@ class MovieModel {
         release = DateTime.tryParse(item["release"]),
         rating = item["rating"],
         id = item["id"],
-        averageRating = item["averageRating"];
+        averageRating = item["averageRating"],
+        backlogged = item["backlogged"];
 }

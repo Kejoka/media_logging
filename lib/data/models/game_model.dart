@@ -1,4 +1,3 @@
-
 class GameModel {
   final int id;
   final String title;
@@ -10,19 +9,20 @@ class GameModel {
   double rating;
   int trophy;
   final int addedIn;
+  final int backlogged;
 
-  GameModel({
-    this.id = 0,
-    required this.title,
-    required this.image,
-    required this.release,
-    required this.genres,
-    required this.platforms,
-    required this.averageRating,
-    required this.rating,
-    required this.addedIn,
-    required this.trophy,
-  });
+  GameModel(
+      {this.id = 0,
+      required this.title,
+      required this.image,
+      required this.release,
+      required this.genres,
+      required this.platforms,
+      required this.averageRating,
+      required this.rating,
+      required this.addedIn,
+      required this.trophy,
+      required this.backlogged});
 
   Map<String, dynamic> toMap() {
     return {
@@ -47,6 +47,7 @@ class GameModel {
       "rating": rating,
       "addedIn": addedIn,
       "trophy": trophy,
+      "backlogged": backlogged
     };
   }
 
@@ -60,5 +61,6 @@ class GameModel {
         averageRating = item["averageRating"],
         rating = item["rating"],
         addedIn = item["addedIn"],
-        trophy = item["trophy"];
+        trophy = item["trophy"],
+        backlogged = item["backlogged"];
 }

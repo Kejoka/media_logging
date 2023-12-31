@@ -23,18 +23,17 @@ import 'package:tmdb_api/tmdb_api.dart';
 class MediaRepositoryImpl implements MediaRepository {
   Future<Database> initDB() async {
     String dbPath = await getDatabasesPath();
-    return openDatabase(join(dbPath, "media_database.db"), version: 3,
-        onCreate: (database, version) async {
+    Database db = await openDatabase(join(dbPath, "media_database.db"),
+        version: 4, onCreate: (database, version) async {
       await database.execute(
-          "CREATE TABLE games (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, addedIn NUMBER, image TEXT, release TEXT, genres TEXT, platforms TEXT, averageRating REAL, rating REAL DEFAULT 2.5, trophy NUMBER)");
+          "CREATE TABLE games (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, addedIn NUMBER, image TEXT, release TEXT, genres TEXT, platforms TEXT, averageRating REAL, rating REAL DEFAULT 2.5, trophy NUMBER, backlogged INT DEFAULT 0)");
       await database.execute(
-          "CREATE TABLE movies (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, image TEXT, genres TEXT, addedIn NUMBER, release TEXT, rating REAL DEFAULT 2.5, averageRating REAL)");
+          "CREATE TABLE movies (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, image TEXT, genres TEXT, addedIn NUMBER, release TEXT, rating REAL DEFAULT 2.5, averageRating REAL, backlogged INT DEFAULT 0)");
       await database.execute(
-          "CREATE TABLE shows (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, image TEXT, genres TEXT, addedIn NUMBER, release TEXT, rating REAL DEFAULT 2.5, seasons TEXT, averageRating REAL, episode INT DEFAULT 0)");
+          "CREATE TABLE shows (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, image TEXT, genres TEXT, addedIn NUMBER, release TEXT, rating REAL DEFAULT 2.5, seasons TEXT, averageRating REAL, episode INT DEFAULT 0, backlogged INT DEFAULT 0)");
       await database.execute(
-          "CREATE TABLE books (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, subtitle TEXT, image TEXT, author TEXT, rating REAL DEFAULT 2.5, averageRating REAL, pageCount NUMBER, release TEXT, addedIn NUMBER)");
-    },
-    onUpgrade: (database, oldVersion, newVersion) async {
+          "CREATE TABLE books (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, subtitle TEXT, image TEXT, author TEXT, rating REAL DEFAULT 2.5, averageRating REAL, pageCount NUMBER, release TEXT, addedIn NUMBER, backlogged INT DEFAULT 0)");
+    }, onUpgrade: (database, oldVersion, newVersion) async {
       log("Old Version: ${oldVersion.toString()}, New Version: ${newVersion.toString()}");
       if (oldVersion < newVersion) {
         oldVersion++;
@@ -44,38 +43,90 @@ class MediaRepositoryImpl implements MediaRepository {
         await _performDBUpgrade(database, oldVersion);
       }
     });
+    return db;
+  }
+
+  Future<int> getMaxId(medium) async {
+    List<Map<String, Object?>> result;
+    final db = await initDB();
+    result =
+        await db.query(medium, columns: ["id"], orderBy: "id desc", limit: 1);
+    int returnVal;
+    result.isEmpty
+        ? returnVal = 0
+        : returnVal = int.parse(result.first["id"].toString());
+    return returnVal;
   }
 
   @override
-  Future<List<Object>> getAll(int filterYear, String mediaType) async {
+  Future<List<Object>> getAll(
+      int filterYear, String mediaType, String appMode) async {
     final db = await initDB();
-    final List<Map<String, Object?>> result = await db.query(mediaType,
-        where: "addedIn = $filterYear", orderBy: "id desc");
+    final List<Map<String, Object?>> result;
+    if (appMode == "Medien-Regal") {
+      result = await db.query(mediaType,
+          where: "addedIn = $filterYear AND NOT backlogged = 1",
+          orderBy: "id desc");
+    } else {
+      result = await db.query(mediaType,
+          where: "backlogged = 1", orderBy: "id desc");
+    }
 
     switch (mediaType) {
       case "games":
         final dbGames = result.map((e) => GameModel.fromMap(e));
         return dbGames
-            .map((e) => Game(e.id, e.title, e.image, e.release, e.genres,
-                e.platforms, e.averageRating, e.rating, e.addedIn, e.trophy))
+            .map((e) => Game(
+                e.id,
+                e.title,
+                e.image,
+                e.release,
+                e.genres,
+                e.platforms,
+                e.averageRating,
+                e.rating,
+                e.addedIn,
+                e.trophy,
+                e.backlogged))
             .toList();
       case "movies":
         final dbMovies = result.map((e) => MovieModel.fromMap(e));
         return dbMovies
             .map((e) => Movie(e.title, e.image, e.genres, e.addedIn, e.release,
-                e.rating, e.averageRating, e.id))
+                e.rating, e.averageRating, e.id, e.backlogged))
             .toList();
       case "shows":
         final dbShows = result.map((e) => ShowModel.fromMap(e));
         return dbShows
-            .map((e) => Show(e.title, e.image, e.genres, e.addedIn, e.release,
-                e.rating, e.seasonsA, e.seasonsB, e.averageRating, e.episode, e.id))
+            .map((e) => Show(
+                e.title,
+                e.image,
+                e.genres,
+                e.addedIn,
+                e.release,
+                e.rating,
+                e.seasonsA,
+                e.seasonsB,
+                e.averageRating,
+                e.episode,
+                e.id,
+                e.backlogged))
             .toList();
       case "books":
         final dbBooks = result.map((e) => DBBookModel.fromMap(e));
         return dbBooks
-            .map((e) => DbBook(e.title, e.subtitle, e.image, e.author, e.rating,
-                e.averageRating, e.pageCount, e.release, e.addedIn, e.id))
+            .map((e) => DbBook(
+                e.title,
+                e.subtitle,
+                e.image,
+                e.author,
+                e.rating,
+                e.averageRating,
+                e.pageCount,
+                e.release,
+                e.addedIn,
+                e.id,
+                e.backlogged))
             .toList();
       default:
         return [];
@@ -108,6 +159,7 @@ class MediaRepositoryImpl implements MediaRepository {
   @override
   Future<void> updateMedium(dynamic medium) async {
     final db = await initDB();
+    log(medium.backlogged.toString());
     switch (medium.runtimeType) {
       case GameModel:
         await db.update('games', medium.toMap(),
@@ -142,7 +194,8 @@ class MediaRepositoryImpl implements MediaRepository {
 
   /// Functions that will fetch suggestions dpending on the given media type
   @override
-  Future<List> getSuggestions(String queryString, String mediaType,
+  Future<List> getSuggestions(
+      String queryString, String mediaType, String? appMode,
       {int? addedIn, int? queryYear}) async {
     if (queryString.isEmpty) {
       return [];
@@ -173,18 +226,31 @@ class MediaRepositoryImpl implements MediaRepository {
         final games = jsonResult
             .map((element) =>
                 gameModelFromJson(element, addedIn ?? DateTime.now().year))
-            .map((e) => Game(e.id, e.title, e.image, e.release, e.genres,
-                e.platforms, e.averageRating, e.rating, e.addedIn, e.trophy))
+            .map((e) => Game(
+                e.id,
+                e.title,
+                e.image,
+                e.release,
+                e.genres,
+                e.platforms,
+                e.averageRating,
+                e.rating,
+                e.addedIn,
+                e.trophy,
+                e.backlogged))
             .toList();
         return games;
       case "movies":
+
         /// Fetch data from tmdb with the tmdb dart wrapper
         await dotenv.load();
-        if (dotenv.env['TMDB_V3'] == null || dotenv.env['TMDB_TOKEN_V4'] == null) {
+        if (dotenv.env['TMDB_V3'] == null ||
+            dotenv.env['TMDB_TOKEN_V4'] == null) {
           return [];
         }
         final tmdb = TMDB(
-            ApiKeys(dotenv.env['TMDB_V3'] ?? "", dotenv.env['TMDB_TOKEN_V4'] ?? ""),
+            ApiKeys(
+                dotenv.env['TMDB_V3'] ?? "", dotenv.env['TMDB_TOKEN_V4'] ?? ""),
             defaultLanguage: 'de-DE');
         Map results;
         if (queryYear != null) {
@@ -199,13 +265,12 @@ class MediaRepositoryImpl implements MediaRepository {
           try {
             SharedPreferences prefs = await SharedPreferences.getInstance();
             bool releaseLock = prefs.getBool('release_lock') ?? true;
-            if (releaseLock) {
+            if (releaseLock && appMode == "Medien-Regal") {
               if (!DateTime.parse(result["release_date"])
                   .isAfter(DateTime.now())) {
                 suggestions.add(result);
               }
-            }
-            else {
+            } else {
               suggestions.add(result);
             }
           } catch (error) {
@@ -214,13 +279,16 @@ class MediaRepositoryImpl implements MediaRepository {
         }
         return suggestions;
       case "shows":
+
         /// Fetch data from tmdb with the tmdb dart wrapper
         await dotenv.load();
-        if (dotenv.env['TMDB_V3'] == null || dotenv.env['TMDB_TOKEN_V4'] == null) {
+        if (dotenv.env['TMDB_V3'] == null ||
+            dotenv.env['TMDB_TOKEN_V4'] == null) {
           return [];
         }
         final tmdb = TMDB(
-            ApiKeys(dotenv.env['TMDB_V3'] ?? "", dotenv.env['TMDB_TOKEN_V4'] ?? ""),
+            ApiKeys(
+                dotenv.env['TMDB_V3'] ?? "", dotenv.env['TMDB_TOKEN_V4'] ?? ""),
             defaultLanguage: 'de-DE');
         Map results = await tmdb.v3.search.queryTvShows(queryString);
         List<dynamic> suggestions = [];
@@ -228,13 +296,12 @@ class MediaRepositoryImpl implements MediaRepository {
           try {
             SharedPreferences prefs = await SharedPreferences.getInstance();
             bool releaseLock = prefs.getBool('release_lock') ?? true;
-            if (releaseLock) {
+            if (releaseLock && appMode == "Medien-Regal") {
               if (!DateTime.parse(result["first_air_date"])
                   .isAfter(DateTime.now())) {
                 suggestions.add(result);
               }
-            }
-            else {
+            } else {
               suggestions.add(result);
             }
           } catch (error) {
@@ -243,6 +310,7 @@ class MediaRepositoryImpl implements MediaRepository {
         }
         return suggestions;
       case "books":
+
         /// Fetch data from google books with the official dart wrapper
         final List<Book> books = await queryBooks(
           queryString,
@@ -312,7 +380,8 @@ class MediaRepositoryImpl implements MediaRepository {
         averageRating: json["total_rating"],
         rating: 2.5,
         trophy: 0,
-        addedIn: addedIn);
+        addedIn: addedIn,
+        backlogged: 0);
     return game;
   }
 
@@ -353,19 +422,34 @@ class MediaRepositoryImpl implements MediaRepository {
 }
 
 Future<void> _performDBUpgrade(database, versionNumber) async {
-  switch(versionNumber) {
+  switch (versionNumber) {
     case 2:
-      await database.execute("ALTER TABLE shows ADD COLUMN episode INT DEFAULT 0");
+      await database
+          .execute("ALTER TABLE shows ADD COLUMN episode INT DEFAULT 0");
       break;
     case 3:
-      await database.execute("ALTER TABLE games ADD COLUMN rating REAL DEFAULT 2.5");
-      await database.execute("ALTER TABLE movies ADD COLUMN rating REAL DEFAULT 2.5");
-      await database.execute("ALTER TABLE shows ADD COLUMN rating REAL DEFAULT 2.5");
-      await database.execute("ALTER TABLE books ADD COLUMN rating REAL DEFAULT 2.5");
+      await database
+          .execute("ALTER TABLE games ADD COLUMN rating REAL DEFAULT 2.5");
+      await database
+          .execute("ALTER TABLE movies ADD COLUMN rating REAL DEFAULT 2.5");
+      await database
+          .execute("ALTER TABLE shows ADD COLUMN rating REAL DEFAULT 2.5");
+      await database
+          .execute("ALTER TABLE books ADD COLUMN rating REAL DEFAULT 2.5");
       await database.execute("ALTER TABLE games DROP COLUMN medal");
       await database.execute("ALTER TABLE movies DROP COLUMN medal");
       await database.execute("ALTER TABLE shows DROP COLUMN medal");
       await database.execute("ALTER TABLE books DROP COLUMN medal");
+      break;
+    case 4:
+      await database
+          .execute("ALTER TABLE games ADD COLUMN backlogged INT DEFAULT 0");
+      await database
+          .execute("ALTER TABLE movies ADD COLUMN backlogged INT DEFAULT 0");
+      await database
+          .execute("ALTER TABLE shows ADD COLUMN backlogged INT DEFAULT 0");
+      await database
+          .execute("ALTER TABLE books ADD COLUMN backlogged INT DEFAULT 0");
       break;
   }
 }

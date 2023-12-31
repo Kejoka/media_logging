@@ -26,7 +26,6 @@ class MediaNavigator extends StatefulWidget {
 
 class _MediaNavigatorState extends State<MediaNavigator>
     with TickerProviderStateMixin {
-  // 0 = Media List View, 1 = Statistics View
   var _appMode = "Medien-Regal";
   final _appModeTexts = ["Medien-Regal", "Backlog", "Statistiken"];
   var _selectedYear = DateTime.now().year;
@@ -131,7 +130,7 @@ class _MediaNavigatorState extends State<MediaNavigator>
             _showListBuilder,
             _bookListBuilder,
           ]),
-          bottomNavigationBar: FutureBuilder(
+          bottomNavigationBar: (_appMode != "Backlog") ? FutureBuilder(
               future: GetIt.instance
                   .get<GetYearList>()
                   .call(_tabBarController.index),
@@ -144,7 +143,7 @@ class _MediaNavigatorState extends State<MediaNavigator>
                       refreshView: _refreshMediaView);
                 }
                 return Container();
-              })),
+              })) : null,
           floatingActionButton: _getFloatingActionButton());
     });
   }
@@ -152,7 +151,7 @@ class _MediaNavigatorState extends State<MediaNavigator>
   /// FloatingActionButton moved to a function for readability.
   /// The FloatingActionButton will only be shown if the appmode is 0 (media-view)
   _getFloatingActionButton() {
-    if (_appMode == "Medien-Regal") {
+    if (_appMode == "Medien-Regal" || _appMode == "Backlog") {
       return FloatingActionButton(
         onPressed: _showForm,
         // Dark mode colors I chose did not look good in light mode
@@ -177,19 +176,19 @@ class _MediaNavigatorState extends State<MediaNavigator>
         switch (_tabBarController.index) {
           case 0:
             await Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const GameManualForm()));
+                MaterialPageRoute(builder: (_) => GameManualForm(appMode: _appMode,)));
             return;
           case 1:
             await Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const MovieManualForm()));
+                MaterialPageRoute(builder: (_) => MovieManualForm(appMode: _appMode,)));
             return;
           case 2:
             await Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const ShowManualForm()));
+                MaterialPageRoute(builder: (_) => ShowManualForm(appMode: _appMode,)));
             return;
           case 3:
             await Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => const BookManualForm()));
+                MaterialPageRoute(builder: (_) => BookManualForm(appMode: _appMode,)));
             return;
         }
       } else {
@@ -198,13 +197,13 @@ class _MediaNavigatorState extends State<MediaNavigator>
             builder: (BuildContext context) {
               switch (_tabBarController.index) {
                 case 0:
-                  return const Gameform();
+                  return Gameform(appMode: _appMode,);
                 case 1:
-                  return const MovieForm();
+                  return MovieForm(appMode: _appMode,);
                 case 2:
-                  return const ShowForm();
+                  return ShowForm(appMode: _appMode,);
                 case 3:
-                  return const BookForm();
+                  return BookForm(appMode: _appMode,);
                 default:
                   return Container();
               }

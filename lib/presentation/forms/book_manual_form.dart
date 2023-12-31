@@ -12,8 +12,9 @@ import 'package:media_logging/domain/use_cases/update_medium.dart';
 /// object is passed
 
 class BookManualForm extends StatefulWidget {
-  const BookManualForm({this.book, super.key});
+  const BookManualForm({this.appMode, this.book, super.key});
   final DbBook? book;
+  final String? appMode;
   @override
   State<BookManualForm> createState() => _BookManualFormState();
 }
@@ -149,7 +150,7 @@ class _BookManualFormState extends State<BookManualForm> {
                 ),
               ],
             ),
-            (widget.book == null)
+            (widget.book == null && widget.appMode == "Medien-Regal")
                 ? SizedBox(
                   height: 300,
                   child: YearPicker(
@@ -168,6 +169,10 @@ class _BookManualFormState extends State<BookManualForm> {
                   backgroundColor: Theme.of(context).primaryColor,
                 ),
                 onPressed: () async {
+                  int backlogVal = 0;
+                  if (widget.appMode == "Backlog") {
+                    backlogVal = 1;
+                  }
                   if (widget.book != null) {
                     // Despite the null check I still have to write book? for some reason
                     await GetIt.instance.get<UpdateMedium>().call(DBBookModel(
@@ -181,7 +186,8 @@ class _BookManualFormState extends State<BookManualForm> {
                             ratingVal ?? widget.book?.averageRating ?? 0.0,
                         pageCount: pageCount ?? widget.book?.pageCount ?? 0,
                         release: newDate ?? widget.book?.release,
-                        addedIn: widget.book?.addedIn ?? DateTime.now().year));
+                        addedIn: widget.book?.addedIn ?? DateTime.now().year,
+                        backlogged: backlogVal));
                   } else {
                     await GetIt.instance.get<CreateMedium>().call(DBBookModel(
                         title: titleText ?? "Kein Titel",
@@ -192,7 +198,8 @@ class _BookManualFormState extends State<BookManualForm> {
                         averageRating: ratingVal ?? 0.0,
                         pageCount: pageCount ?? 0,
                         release: newDate ?? DateTime.now(),
-                        addedIn: addedIn.year));
+                        addedIn: addedIn.year,
+                        backlogged: backlogVal));
                   }
                   Navigator.of(this.context).pop(addedIn);
                 },

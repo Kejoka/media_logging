@@ -11,18 +11,20 @@ class MediaContentBuilder extends StatelessWidget {
       {required this.builder,
       required this.filterYear,
       required this.mediaIndex,
+      required this.appMode,
       super.key});
 
   final dynamic builder;
   final int filterYear;
   final int mediaIndex;
+  final String appMode;
   final List<String> mediaTypes = const ["games", "movies", "shows", "books"];
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
       future: GetIt.instance
           .get<GetAllMedia>()
-          .call(filterYear, mediaTypes[mediaIndex]),
+          .call(filterYear, mediaTypes[mediaIndex], appMode),
       builder: ((context, snapshot) {
         // Decided not to show a Loading Icon since switching from showing
         // this to actual content was very fast anyway and it just caused all

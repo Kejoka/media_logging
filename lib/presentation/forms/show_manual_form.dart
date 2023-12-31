@@ -12,8 +12,9 @@ import 'package:media_logging/domain/use_cases/update_medium.dart';
 /// object is passed
 
 class ShowManualForm extends StatefulWidget {
-  const ShowManualForm({this.show, super.key});
+  const ShowManualForm({this.appMode, this.show, super.key});
   final Show? show;
+  final String? appMode;
   @override
   State<ShowManualForm> createState() => _ShowManualFormState();
 }
@@ -160,7 +161,7 @@ class _ShowManualFormState extends State<ShowManualForm> {
                 ),
               ],
             ),
-            (widget.show == null)
+            (widget.show == null && widget.appMode == "Medien-Regal")
                 ? SizedBox(
                   height: 300,
                     child: YearPicker(
@@ -182,6 +183,10 @@ class _ShowManualFormState extends State<ShowManualForm> {
                   if (seasonNums[0] == null && seasonNums[1] != null) {
                     seasonNums[0] = seasonNums[1];
                   }
+                  int backlogVal = 0;
+                  if (widget.appMode == "Backlog") {
+                    backlogVal = 1;
+                  }
                   if (widget.show != null) {
                     // Despite the null check I still have to write show? for some reason
                     await GetIt.instance.get<UpdateMedium>().call(ShowModel(
@@ -196,7 +201,8 @@ class _ShowManualFormState extends State<ShowManualForm> {
                           genres: genreList ?? widget.show?.genres ?? [],
                           seasonsA: seasonNums[0] ?? widget.show?.seasonsA ?? 0,
                           seasonsB: seasonNums[1] ?? widget.show?.seasonsB ?? 0,
-                          episode: widget.show?.episode ?? 0
+                          episode: widget.show?.episode ?? 0,
+                          backlogged: backlogVal
                         ));
                   } else {
                     await GetIt.instance.get<CreateMedium>().call(ShowModel(
@@ -209,7 +215,8 @@ class _ShowManualFormState extends State<ShowManualForm> {
                           genres: genreList ?? [],
                           seasonsA: seasonNums[0] ?? 0,
                           seasonsB: seasonNums[1] ?? 0,
-                          episode: 0
+                          episode: 0,
+                          backlogged: backlogVal
                         ));
                   }
                   Navigator.of(this.context).pop(addedIn);

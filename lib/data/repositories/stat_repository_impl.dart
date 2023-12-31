@@ -13,7 +13,7 @@ class StatRepositoryImpl implements StatRepository {
   Future<List<List<Map<String, dynamic>>>> getGameStats(int filterYear) async {
     List<List<Map<String, dynamic>>> stats = [];
     var games =
-        await GetIt.instance.get<GetAllMedia>().call(filterYear, "games");
+        await GetIt.instance.get<GetAllMedia>().call(filterYear, "games", "Medien-Regal");
     if (games.isEmpty) {
       return stats;
     }
@@ -31,7 +31,7 @@ class StatRepositoryImpl implements StatRepository {
   Future<List<List<Map<String, dynamic>>>> getBookStats(int filterYear) async {
     List<List<Map<String, dynamic>>> stats = [];
     var books =
-        await GetIt.instance.get<GetAllMedia>().call(filterYear, "books");
+        await GetIt.instance.get<GetAllMedia>().call(filterYear, "books", "Medien-Regal");
     if (books.isEmpty) {
       return stats;
     }
@@ -48,7 +48,7 @@ class StatRepositoryImpl implements StatRepository {
   Future<List<List<Map<String, dynamic>>>> getShowStats(int filterYear) async {
     List<List<Map<String, dynamic>>> stats = [];
     var shows =
-        await GetIt.instance.get<GetAllMedia>().call(filterYear, "shows");
+        await GetIt.instance.get<GetAllMedia>().call(filterYear, "shows", "Medien-Regal");
     if (shows.isEmpty) {
       return stats;
     }
@@ -66,7 +66,7 @@ class StatRepositoryImpl implements StatRepository {
   Future<List<List<Map<String, dynamic>>>> getMovieStats(int filterYear) async {
     List<List<Map<String, dynamic>>> stats = [];
     var movies =
-        await GetIt.instance.get<GetAllMedia>().call(filterYear, "movies");
+        await GetIt.instance.get<GetAllMedia>().call(filterYear, "movies", "Medien-Regal");
     if (movies.isEmpty) {
       return stats;
     }

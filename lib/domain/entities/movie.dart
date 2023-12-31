@@ -7,10 +7,11 @@ class Movie {
   double rating;
   final int id;
   final double averageRating;
+  int backlogged;
 
   Movie(this.title, this.image, this.genres, this.addedIn, this.release,
-      this.rating, this.averageRating, this.id);
-      
+      this.rating, this.averageRating, this.id, this.backlogged);
+       
   // This function generates the string that will be displayed in the Movie Tile
   String getTileText() {
     String returnString = "";
@@ -25,8 +26,12 @@ class Movie {
     if (returnString.length >= 2) {
       returnString = returnString.substring(0, returnString.length - 2);
       if (release != null) {
+      String grammarFix = "Erschienen";
+      if (release!.isAfter(DateTime.now())) {
+        grammarFix = "Erscheint";
+      }
         returnString +=
-            "\nErschienen: ${release?.day}.${release?.month}.${release?.year}";
+            "\n$grammarFix: ${release?.day}.${release?.month}.${release?.year}";
       }
     } else if (release != null) {
       returnString += "${release?.day}.${release?.month}.${release?.year}";

@@ -15,11 +15,13 @@ class MovieItem extends StatefulWidget {
   final Movie movie;
   final Function()? onTap;
   final Function()? onLongPress;
+  final String? appMode;
 
   const MovieItem({
     required this.movie,
     this.onTap,
     this.onLongPress,
+    this.appMode,
     Key? key,
   }) : super(key: key);
 
@@ -61,12 +63,13 @@ class _MovieItemState extends State<MovieItem> {
           onLongPress: widget.onLongPress,
           padding: EdgeInsets.zero,
           margin: EdgeInsets.zero,
-          icon: Padding(
+          icon: (widget.appMode == "Medien-Regal") ? Padding(
             padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
             child: SizedBox(
-              width: 20,
+              width: 25,
               height: 100,
               child: RatingBar(
+                glowRadius: 1,
                 initialRating: currentRating,
                 direction: Axis.vertical,
                 allowHalfRating: true,
@@ -77,7 +80,7 @@ class _MovieItemState extends State<MovieItem> {
                   _updateRating(rating);
               })
             ),
-          ),
+          ) : null,
         ),
       ),
     );
@@ -97,7 +100,8 @@ class _MovieItemState extends State<MovieItem> {
         release: widget.movie.release,
         rating: currentRating,
         averageRating: widget.movie.averageRating,
-        id: widget.movie.id));
+        id: widget.movie.id,
+        backlogged: widget.movie.backlogged));
   }
   /// Function that handles image loading
   _generateImage() {

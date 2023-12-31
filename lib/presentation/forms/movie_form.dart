@@ -12,7 +12,8 @@ import 'package:media_logging/presentation/forms/movie_manual_form.dart';
 /// based on the user input.
 
 class MovieForm extends StatefulWidget {
-  const MovieForm({super.key});
+  final String? appMode;
+  const MovieForm({this.appMode, super.key});
   @override
   State<MovieForm> createState() => _MovieFormState();
 }
@@ -32,7 +33,7 @@ class _MovieFormState extends State<MovieForm> {
           child: Material(
             borderRadius: BorderRadius.circular(10),
             child: SizedBox(
-              height: 500,
+              height: (widget.appMode == "Medien-Regal") ? 500 : 275,
               child: Column(
                 children: [
                   TypeAheadField(
@@ -50,7 +51,7 @@ class _MovieFormState extends State<MovieForm> {
                     suggestionsCallback: (pattern) async {
                       return await GetIt.instance
                           .get<GetSuggestions>()
-                          .call(pattern, "movies", queryYear: _searchYear);
+                          .call(pattern, "movies", widget.appMode, queryYear: _searchYear);
                     },
                     suggestionsBoxDecoration: const SuggestionsBoxDecoration(
                         constraints: BoxConstraints(
@@ -88,7 +89,7 @@ class _MovieFormState extends State<MovieForm> {
                         border: OutlineInputBorder(),
                         labelText: "Optional: Erscheinungsjahr"),
                   ),
-                  Expanded(
+                  (widget.appMode == "Medien-Regal") ? Expanded(
                     child: YearPicker(
                         firstDate: DateTime(DateTime.now().year - 25),
                         lastDate: DateTime(DateTime.now().year + 1),
@@ -98,12 +99,12 @@ class _MovieFormState extends State<MovieForm> {
                             year = selectedYear;
                           });
                         }),
-                  ),
+                  ) : const SizedBox(width: 100, height: 20,),
                   ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Theme.of(context).primaryColor,
                       ),
-                      onPressed: _suggestionChosen ? _addMovie : null,
+                      onPressed: _suggestionChosen ? () => _addMovie(widget.appMode) : null,
                       child: const Text("Hinzufügen")),
                   ElevatedButton(
                       style: ElevatedButton.styleFrom(
@@ -123,7 +124,11 @@ class _MovieFormState extends State<MovieForm> {
         ));
   }
 
-  _addMovie() async {
+  _addMovie(String? appMode) async {
+    int backlogVal = 0;
+    if (appMode == "Backlog") {
+      backlogVal = 1;
+    }
     final genres = await GetIt.instance
         .get<GetGenres>()
         .call(_chosenMovie["genre_ids"], "movies");
@@ -144,7 +149,8 @@ class _MovieFormState extends State<MovieForm> {
         averageRating: double.tryParse(
                 _chosenMovie["vote_average"].toDouble().toStringAsFixed(1)) ??
             _chosenMovie["vote_average"].toDouble(),
-        rating: 2.5);
+        rating: 2.5,
+        backlogged: backlogVal);
     GetIt.instance
         .get<CreateMedium>()
         .call(movie)

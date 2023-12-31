@@ -12,7 +12,8 @@ import 'package:media_logging/presentation/forms/book_manual_form.dart';
 /// based on the user input.
 
 class BookForm extends StatefulWidget {
-  const BookForm({super.key});
+  final String? appMode;
+  const BookForm({this.appMode, super.key});
   @override
   State<BookForm> createState() => _BookFormState();
 }
@@ -30,7 +31,7 @@ class _BookFormState extends State<BookForm> {
       child: Material(
         borderRadius: BorderRadius.circular(10),
         child: SizedBox(
-          height: 500,
+          height: (widget.appMode == "Medien-Regal") ? 500 : 200,
           child: Column(
             children: [
               TypeAheadField(
@@ -48,7 +49,7 @@ class _BookFormState extends State<BookForm> {
                 suggestionsCallback: (pattern) async {
                   return await GetIt.instance
                       .get<GetSuggestions>()
-                      .call(pattern, "books");
+                      .call(pattern, "books", widget.appMode);
                 },
                 suggestionsBoxDecoration: const SuggestionsBoxDecoration(
                     constraints: BoxConstraints(
@@ -70,7 +71,7 @@ class _BookFormState extends State<BookForm> {
                   });
                 },
               ),
-              Expanded(
+              (widget.appMode == "Medien-Regal") ? Expanded(
                 child: YearPicker(
                     firstDate: DateTime(DateTime.now().year - 15),
                     lastDate: DateTime(DateTime.now().year + 1),
@@ -81,12 +82,12 @@ class _BookFormState extends State<BookForm> {
                         year = selectedYear;
                       });
                     }),
-              ),
+              ) : const SizedBox(width: 100, height: 20),
               ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).primaryColor,
                   ),
-                  onPressed: _suggestionChosen ? _addBook : null,
+                  onPressed: _suggestionChosen ? () => _addBook(widget.appMode) : null,
                   child: const Text("Hinzufügen")),
               ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -106,7 +107,11 @@ class _BookFormState extends State<BookForm> {
     ));
   }
 
-  _addBook() async {
+  _addBook(String? appMode) async {
+    int backlogVal = 0;
+    if (appMode == "Backlog") {
+      backlogVal = 1;
+    }
     final book = DBBookModel(
         title: _chosenBook.info.title,
         subtitle: _chosenBook.info.subtitle,
@@ -118,6 +123,7 @@ class _BookFormState extends State<BookForm> {
         rating: 2.5,
         author: _chosenBook.info.authors.first,
         averageRating: _chosenBook.info.averageRating,
+        backlogged: backlogVal,
         pageCount: _chosenBook.info.pageCount);
     GetIt.instance
         .get<CreateMedium>()

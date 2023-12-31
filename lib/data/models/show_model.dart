@@ -10,6 +10,7 @@ class ShowModel {
   final int id;
   final double averageRating;
   final int episode;
+  final int backlogged;
 
   ShowModel({
     required this.title,
@@ -23,6 +24,7 @@ class ShowModel {
     required this.averageRating,
     required this.episode,
     this.id = 0,
+    required this.backlogged,
   });
 
   Map<String, dynamic> toMap() {
@@ -42,7 +44,8 @@ class ShowModel {
       "seasons":
           (seasonsA == seasonsB) ? seasonsA.toString() : "$seasonsA-$seasonsB",
       "averageRating": averageRating,
-      "episode": episode
+      "episode": episode,
+      "backlogged": backlogged
     };
   }
 
@@ -54,12 +57,15 @@ class ShowModel {
         release = DateTime.tryParse(item["release"]),
         rating = item["rating"],
         seasonsA = (item["seasons"].contains('-'))
-            ? int.parse(item["seasons"].substring(0, item["seasons"].indexOf('-')))
+            ? int.parse(
+                item["seasons"].substring(0, item["seasons"].indexOf('-')))
             : int.parse(item["seasons"]),
         seasonsB = (item["seasons"].contains('-'))
-            ? int.parse(item["seasons"].substring(item["seasons"].indexOf('-')+1, item["seasons"].length))
+            ? int.parse(item["seasons"].substring(
+                item["seasons"].indexOf('-') + 1, item["seasons"].length))
             : int.parse(item["seasons"]),
         id = item["id"],
         averageRating = item["averageRating"],
-        episode = item["episode"] ?? 0;
+        episode = item["episode"] ?? 0,
+        backlogged = item["backlogged"];
 }

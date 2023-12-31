@@ -9,6 +9,7 @@ class Game {
   double rating;
   int trophy;
   final int addedIn;
+  int backlogged;
 
   Game(
     this.id,
@@ -21,6 +22,7 @@ class Game {
     this.rating,
     this.addedIn,
     this.trophy,
+    this.backlogged,
   );
 
   // This function generates the string that will be displayed in the Game Tile
@@ -52,8 +54,12 @@ class Game {
       }
     }
     if (release != null) {
+      String grammarFix = "Erschienen";
+      if (release!.isAfter(DateTime.now())) {
+        grammarFix = "Erscheint";
+      }
       tileText +=
-          "Erschienen: ${release?.day}.${release?.month}.${release?.year}\n";
+          "$grammarFix: ${release?.day}.${release?.month}.${release?.year}\n";
     }
     if (averageRating != 0.0) {
       tileText += "Durchschnittliche Bewertung: $averageRating";

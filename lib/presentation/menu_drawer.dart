@@ -39,7 +39,7 @@ class _MenuDrawerState extends State<MenuDrawer> {
   Widget build(BuildContext context) {
     return Drawer(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(0, 200, 20, 0),
+        padding: const EdgeInsets.fromLTRB(0, 100, 20, 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           mainAxisSize: MainAxisSize.min,
@@ -66,10 +66,9 @@ class _MenuDrawerState extends State<MenuDrawer> {
                           CupertinoDialogAction(
                             child: const Text("Löschen"),
                             onPressed: () async {
-                              Navigator.of(context).pop();
-                              Navigator.of(context).pop();
                               await GetIt.instance.get<EmptyDatabase>().call();
                               widget.refreshView();
+                              Navigator.of(context).pop();
                             },
                           )
                         ],
@@ -92,9 +91,9 @@ class _MenuDrawerState extends State<MenuDrawer> {
             const SizedBox(height: 10),
             InkWell(
               onTap: () async {
-                Navigator.pop(context);
                 await GetIt.instance.get<ImportDatabase>().call();
                 widget.refreshView();
+                Navigator.pop(context);
               },
               child: const Text(
                 "Datenbank importieren",

@@ -10,9 +10,10 @@ class Show {
   final int id;
   final double averageRating;
   int episode;
+  int backlogged;
 
   Show(this.title, this.image, this.genres, this.addedIn, this.release,
-      this.rating, this.seasonsA, this.seasonsB, this.averageRating, this.episode, this.id);
+      this.rating, this.seasonsA, this.seasonsB, this.averageRating, this.episode, this.id, this.backlogged);
       
   // This function generates the string that will be displayed in the Show Tile
   String getTileText() {
